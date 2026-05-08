@@ -171,17 +171,103 @@ create policy "admin read all" on time_entries
 
 ---
 
+## User Modes — Solo vs Company
+
+A key design decision: the company code should always be **optional**.
+
+### Mode 1: Solo (no company code)
+For freelancers, self-employed workers, or anyone who just wants to track their own hours privately.
+
+- Signs up with email → goes straight to the app
+- Data stored in Supabase under their user ID, no `company_id`
+- All features work exactly as today
+- Can join a company later if needed (Settings → "Join a company")
+- **Never sees employer dashboard or team features**
+
+### Mode 2: Employee (with company code)
+For workers employed by a business that uses the employer dashboard.
+
+- Signs up → enters 6-digit company code → linked to that company
+- Same app experience, but entries are visible to their employer
+- A clear notice is shown: *"Your employer [Company Name] can view your entries"*
+- Can leave the company at any time (data stays, link is removed)
+
+### Mode 3: Employer / Admin
+- Creates a company → gets a 6-digit code to share with employees
+- Uses the web dashboard to view team hours
+- Can also track own hours in the mobile app
+
+### Onboarding Flow
+
+```
+Sign Up
+   │
+   ├─ "Track on my own"  →  Solo mode  →  App (no company)
+   │
+   └─ "Join my employer" →  Enter code →  Employee mode →  App (linked to company)
+
+              (Also available later in Settings → "Join a company")
+```
+
+### Schema Impact
+
+The `company_id` column on `profiles` and `time_entries` becomes nullable:
+
+```sql
+-- Solo users have company_id = NULL
+-- Entries with no company_id are private to the user only
+alter table profiles alter column company_id drop not null;
+alter table time_entries alter column company_id drop not null;
+```
+
+RLS policies already handle this correctly — `null` company_id entries are only accessible by the user themselves.
+
+---
+
 ## Migration Plan (Employee App → Supabase)
 
 The current Zustand store maps cleanly to the PostgreSQL schema — migration is additive.
 
+### Login Strategy: Local-First, Login Optional
+
+Login is **not mandatory**. The app continues to work without an account exactly as it does today. Login unlocks cloud sync and company features as an opt-in upgrade.
+
+```
+┌─────────────────────────────────────────────────┐
+│  First launch → straight into app (local mode)  │
+│  No signup screen. No friction.                 │
+└─────────────────────────────────────────────────┘
+                        │
+                        │  User goes to Settings → "Sync & Backup"
+                        ▼
+┌─────────────────────────────────────────────────┐
+│  Sign up / Log in (email or Google)             │
+│  Existing local data migrates to Supabase       │
+│  Local AsyncStorage stays as offline cache      │
+│  App works offline — syncs when back online     │
+└─────────────────────────────────────────────────┘
+                        │
+                        │  Optional: "Join a company"
+                        ▼
+┌─────────────────────────────────────────────────┐
+│  Enter 6-digit employer code                    │
+│  Entries become visible to employer dashboard   │
+│  User sees: "Your employer can view your hours" │
+└─────────────────────────────────────────────────┘
+```
+
+**Why local-first?** The target demographic (nurses, cleaners, physios) abandon apps that require signup before they've seen any value. Let them use the app first — login becomes worth it once they want backup or their employer requires it.
+
+### Implementation Steps
+
 | Step | What changes |
 |---|---|
-| **1. Add Auth** | New login/signup screen before tabs. Store session in settings store |
-| **2. Company Join** | Onboarding: create company or enter 6-digit invite code |
-| **3. Sync Writes** | Replace AsyncStorage writes with Supabase inserts in store actions |
-| **4. Real-time reads** | `supabase.from('time_entries').on('*', cb).subscribe()` replaces hydration |
-| **5. Offline** | Keep Zustand + AsyncStorage as local cache; sync on reconnect |
+| **1. Supabase setup** | Create project, define schema, configure RLS policies |
+| **2. Auth screen** | Add optional login/signup accessible from Settings only |
+| **3. Data migration** | On first login, upload existing AsyncStorage entries to Supabase |
+| **4. Sync writes** | After login, store actions write to both AsyncStorage (cache) and Supabase |
+| **5. Real-time reads** | `supabase.from('time_entries').on('*', cb).subscribe()` when logged in |
+| **6. Company join** | Optional step in Settings — enter code, link profile to company |
 
 The app remains **offline-first** — local state is the source of truth, Supabase is synced in the background.
 
