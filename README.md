@@ -2,15 +2,30 @@
 
 > A German work-hour tracking mobile app built with **React Native + Expo Router**, targeting iOS and Android.
 
-Matches the **Chronos Flow** design system — Inter typography, deep navy brand palette, and glassmorphism bottom navigation. All data is stored **locally on-device** via AsyncStorage (no backend required).
+Designed for everyday workers — nurses, physiotherapists, cleaners, and anyone who tracks shifts. Simple, accessible, and fast. All data is stored **locally on-device** via AsyncStorage (no backend required). Cloud sync and employer dashboard are planned for v2.
 
 ---
 
-## 📱 Screenshots Reference
+## 📱 Screens
 
 | Dashboard | Aktivität | Berichte | Einstellungen |
 |---|---|---|---|
-| Live timer, weekly progress, stat cards, recent entries | Time entries grouped by Heute/Gestern, Projekte & Kunden toggle | Leistungsberichte analytics + Export-Konfiguration | Profile, currency, notifications, data export |
+| Live timer, weekly progress bar, stat cards, ArbZG warnings, recent entries | Time entries grouped by day, Schichten / Aufträge toggle, search | Date range reports with native date pickers, bar chart, project filter, PDF/CSV export | Profile editing, language, theme, pay settings, ArbZG info |
+
+---
+
+## ✨ Features
+
+- **Live Timer** — start/stop with haptic feedback, shows elapsed HH:MM:SS
+- **Manual Entry** — native date & time pickers (spinner on iOS, dialog on Android)
+- **Weekly Progress** — progress bar with Mo–Fr day labels, respects time format setting
+- **ArbZG Compliance** — advisory warnings for §3 (10h/day), §4 (break rules), §5 (11h rest)
+- **Reports** — PDF and CSV export with native share sheet
+- **Dark Mode** — full Light / Dark / Auto (system) theme with 3-option dropdown
+- **Bilingual** — Deutsch 🇩🇪 and English 🇬🇧, switchable at runtime
+- **Editable Profile** — name and email, shown as initials avatar across all screens
+- **Pay Settings** — hourly rate, currency (€ / $ / £ / CHF), weekly target hours
+- **Swipeable Deletion** — time entries and jobs can be deleted
 
 ---
 
@@ -21,34 +36,39 @@ arbeitszeit-rechner/
 ├── app/
 │   ├── _layout.tsx              # Root layout: Inter fonts, SafeAreaProvider, SplashScreen
 │   └── (tabs)/
-│       ├── _layout.tsx          # 4-tab navigator with custom glassmorphism bar
-│       ├── index.tsx            # Dashboard — timer + weekly progress + stat cards + recent entries
-│       ├── aktivitat.tsx        # Aktivität — Zeiteinträge & Projekte & Kunden toggle view
-│       ├── berichte.tsx         # Berichte — Leistungsberichte analytics + Export-Konfiguration
-│       └── einstellungen.tsx    # Einstellungen — settings screen
+│       ├── _layout.tsx          # 4-tab navigator with custom BottomTabBar
+│       ├── index.tsx            # Dashboard — timer, weekly progress, stat cards, recent entries
+│       ├── aktivitat.tsx        # Aktivität — Schichten & Aufträge toggle view
+│       ├── berichte.tsx         # Berichte — analytics, date pickers, export
+│       └── einstellungen.tsx    # Einstellungen — profile, language, theme, pay
 │
 ├── components/
-│   ├── TimerDisplay.tsx         # Live HH:MM:SS counter with haptic start/stop button
-│   ├── TimeEntryCard.tsx        # Entry card: live timer, left-blue-border for active, earnings
-│   ├── WeeklyProgress.tsx       # Progress bar + Mo–Fr day labels (active day in blue)
-│   ├── StatCard.tsx             # Stat card with optional react-native-svg sparkline
-│   ├── ProjectCard.tsx          # Project card: client label, hours, Abrechenbar badge, edit icon
-│   ├── EntryEditModal.tsx       # Full-screen modal: date/time/break/project/notes/billable
+│   ├── TimerDisplay.tsx         # Live HH:MM:SS counter with haptic start/stop
+│   ├── TimeEntryCard.tsx        # Entry card: active indicator, earnings, swipe-to-delete
+│   ├── WeeklyProgress.tsx       # Progress bar + Mo–Fr day labels (respects timeFormat)
+│   ├── StatCard.tsx             # Stat card with optional SVG sparkline
+│   ├── ProjectCard.tsx          # Project card: client, hours, billable badge, edit/delete
+│   ├── EntryEditModal.tsx       # Full modal: native date/time pickers, project picker
 │   ├── AddProjectModal.tsx      # New/edit project form with 6 color swatches
-│   ├── FAB.tsx                  # Floating action button (blue #0058BE, glow shadow)
-│   └── BottomTabBar.tsx         # Glassmorphism tab bar via expo-blur
+│   ├── EmptyState.tsx           # Empty state illustration + CTA
+│   ├── FAB.tsx                  # Floating action button, safe-area-aware positioning
+│   └── BottomTabBar.tsx         # Custom tab bar with safe area insets
 │
 ├── constants/
-│   ├── colors.ts                # Full Chronos Flow color token map
-│   ├── typography.ts            # Inter type scale (timer/headline/body/label/numeric)
+│   ├── colors.ts                # LightColors + DarkColors token maps
+│   ├── typography.ts            # Inter type scale
 │   └── spacing.ts               # 4px baseline grid, border radii, shadow levels
 │
+├── hooks/
+│   ├── useThemeColors.ts        # Returns active palette (light/dark/system)
+│   └── useTranslation.ts        # Returns translated strings for current language
+│
 ├── store/
-│   ├── useTimeStore.ts          # Zustand store: entries, projects, active timer (AsyncStorage)
-│   └── useSettingsStore.ts      # Zustand store: hourly rate, currency, weekly target, etc.
+│   ├── useTimeStore.ts          # Zustand: entries, projects, active timer (AsyncStorage)
+│   └── useSettingsStore.ts      # Zustand: profile, theme, language, pay settings
 │
 └── utils/
-    ├── formatTime.ts            # HH:MM:SS, German date strings, time ranges, earnings
+    ├── formatTime.ts            # HH:MM:SS, formatDuration, German dates, earnings
     ├── germanLaborLaw.ts        # ArbZG §3/§4/§5 advisory checks
     └── exportHelpers.ts         # CSV + PDF generation + expo-sharing
 ```
@@ -60,17 +80,15 @@ arbeitszeit-rechner/
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) ≥ 18
-- [Expo CLI](https://docs.expo.dev/get-started/installation/) (`npm install -g expo-cli`)
-- iOS Simulator (Xcode) or Android Emulator (Android Studio), **or** the [Expo Go](https://expo.dev/go) app on a physical device
+- iOS Simulator (Xcode) or Android Emulator (Android Studio), **or** [Expo Go](https://expo.dev/go) on a physical device
 
-### Install dependencies
+### Install
 
 ```bash
-cd /Users/mehul/Downloads/arbeitszeit-rechner
 npm install --legacy-peer-deps
 ```
 
-### Start the dev server
+### Run
 
 ```bash
 npx expo start --clear
@@ -80,58 +98,55 @@ npx expo start --clear
 |---|---|
 | `i` | Open iOS Simulator |
 | `a` | Open Android Emulator |
-| Scan QR | Open in Expo Go on a physical device |
+| Scan QR | Open in Expo Go on device |
 
 ---
 
-## 📦 Dependencies
+## 📦 Key Dependencies
 
 | Package | Purpose |
 |---|---|
 | `expo-router` | File-based navigation |
-| `zustand` | Lightweight state management |
+| `zustand` | State management |
 | `@react-native-async-storage/async-storage` | On-device persistence |
+| `@react-native-community/datetimepicker` | Native date & time pickers |
 | `@expo-google-fonts/inter` | Inter 400/500/600/700 |
-| `expo-blur` | Glassmorphism tab bar backdrop |
 | `expo-haptics` | Haptic feedback on timer toggle |
-| `expo-print` | PDF generation for export |
+| `expo-print` | PDF generation |
 | `expo-sharing` | Native share sheet |
 | `expo-file-system` | CSV file writing |
-| `react-native-svg` | Sparkline charts in stat cards |
+| `react-native-svg` | Bar charts in reports |
 | `date-fns` | German locale date formatting |
 | `react-native-safe-area-context` | Safe area insets |
-| `react-native-screens` | Native screen optimization |
-| `@expo/vector-icons` | Ionicons (outlined, 2px stroke) |
+| `@expo/vector-icons` | Ionicons |
 
 ---
 
-## 🎨 Design System — Chronos Flow
+## 🎨 Design System
 
+### Light Mode
 | Token | Value |
 |---|---|
 | Background | `#F7F9FB` |
-| Surface (Cards) | `#FFFFFF` |
-| Primary | `#091426` (Deep Navy) |
+| Surface | `#FFFFFF` |
 | Action Blue | `#0058BE` |
-| Active Blue | `#2170E4` |
 | Outline | `#75777D` |
-| Card Border | `#E0E3E5` |
-| Error / Stop | `#BA1A1A` |
-| Font | Inter (400, 500, 600, 700) |
-| Card Radius | 16px |
-| Input Radius | 12px |
-| Chip Radius | 9999px (pill) |
-| Shadow L1 | `0 2 4 rgba(0,0,0,0.04)` |
-| Shadow L2 | `0 8 16 rgba(0,0,0,0.08)` |
 
-### Brand & Style
-The design is **utilitarian yet premium** — focused on the "flow state" of work rather than the chore of tracking it. It uses high-contrast typography, a restrained palette, and glassmorphism navigation to ensure time-stamps and durations are the undisputed heroes of every screen.
+### Dark Mode
+| Token | Value |
+|---|---|
+| Background | `#0F1117` |
+| Surface | `#1A1D25` |
+| Action Blue | `#4A90E2` |
+| Outline | `#8A8D95` |
+
+- **Font:** Inter (400, 500, 600, 700)
+- **Card Radius:** 16px · **Input Radius:** 12px · **Chip Radius:** 9999px
+- **Shadows:** L1 `0 2 4 rgba(0,0,0,0.04)` · L2 `0 8 16 rgba(0,0,0,0.08)`
 
 ---
 
-## 🗄 State Management
-
-All state is managed with **Zustand** and persisted to AsyncStorage automatically.
+## 🗄 Data Model
 
 ### `useTimeStore`
 
@@ -149,8 +164,8 @@ interface TimeEntry {
 interface Project {
   id: string;
   name: string;
-  client: string;          // displayed in CAPS
-  hourlyRate: number;      // EUR
+  client: string;
+  hourlyRate: number;
   billable: boolean;
   color: string;           // hex, for chip tinting
 }
@@ -162,12 +177,13 @@ interface Project {
 {
   userName: string;
   userEmail: string;
-  hourlyRate: number;           // default 125
-  currencySymbol: '€'|'$'|'£'|'CHF';
-  weeklyTargetHours: number;    // default 40
-  timeFormat: 'HH:MM'|'decimal';
+  language: 'de' | 'en';
+  theme: 'light' | 'dark' | 'system';
+  hourlyRate: number;
+  currencySymbol: '€' | '$' | '£' | 'CHF';
+  weeklyTargetHours: number;
+  timeFormat: 'HH:MM' | 'decimal';
   pushNotifications: boolean;
-  weeklyEmailSummary: boolean;
 }
 ```
 
@@ -175,7 +191,7 @@ interface Project {
 
 ## 🇩🇪 German Labor Law (ArbZG)
 
-The app includes **advisory-only** checks for the *Arbeitszeitgesetz*. Violations appear as a yellow warning banner on the Dashboard — they never block saving entries.
+Advisory-only checks — violations show a yellow warning banner on the Dashboard and never block saving.
 
 | Section | Rule | Check |
 |---|---|---|
@@ -189,50 +205,26 @@ The app includes **advisory-only** checks for the *Arbeitszeitgesetz*. Violation
 
 | Format | Implementation |
 |---|---|
-| **PDF-Bericht** | `expo-print` → HTML → PDF → `expo-sharing` native share sheet |
-| **CSV-Rohdaten** | German CSV (`;`-delimited) written via `expo-file-system/legacy` → shared |
-| **Excel-Tabelle** | Planned for v2 (requires `exceljs`) |
-
----
-
-## 🔍 TypeScript
-
-```bash
-npx tsc --noEmit
-# → 0 errors ✅
-```
-
----
-
-## ⚠️ Known Package Version Warnings
-
-The scaffold was initialized with some packages ahead of Expo SDK 54's expected versions. The app runs correctly but Expo may warn at startup:
-
-| Package | Installed | SDK 54 Expected |
-|---|---|---|
-| `@react-native-async-storage/async-storage` | 3.0.2 | 2.2.0 |
-| `expo-file-system` | 55.x | ~19.x |
-| `expo-font` | 55.x | ~14.x |
-| `expo-haptics` | 55.x | ~15.x |
-| `react-native-svg` | 15.15.4 | 15.12.1 |
-
-To align to SDK 54 expected versions:
-```bash
-npx expo install --fix
-```
+| **PDF** | `expo-print` → HTML → PDF → `expo-sharing` |
+| **CSV** | German `;`-delimited via `expo-file-system` → shared |
+| **Excel** | Planned — v1.1 |
 
 ---
 
 ## 🗺 Roadmap
 
-- [ ] **v1.1** — Excel export via `exceljs`
-- [ ] **v1.1** — Push notifications for ArbZG violations (`expo-notifications`)
-- [ ] **v1.2** — Multiple timer sessions / pause support
-- [ ] **v2.0** — Cloud sync (Supabase or Firebase)
-- [ ] **v2.0** — Team / multi-user support
+| Version | Feature |
+|---|---|
+| **v1.1** | Excel export via `exceljs` |
+| **v1.1** | Push notifications for ArbZG violations |
+| **v2.0** | Firebase backend + user authentication |
+| **v2.0** | Multi-device sync |
+| **v2.0** | Employer web dashboard (Next.js) |
+
+> 📄 See **[next-features.md](./next-features.md)** for the full v2.0 architecture, Firestore data model, employer dashboard feature list, and migration plan.
 
 ---
 
 ## 📄 License
 
-Private — all rights reserved.
+Private — all rights reserved © Munichsoft
