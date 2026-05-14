@@ -29,6 +29,81 @@ Designed for everyday workers — nurses, physiotherapists, cleaners, and anyone
 
 ---
 
+### Run Development Build
+
+Since this project uses custom native modules, you **cannot** use standard Expo Go. You must use a **Development Build**.
+
+**Build & Run on Android Emulator:**
+```bash
+export JAVA_HOME=$(pwd)/.java17/jdk-17.0.14+7/Contents/Home
+npx expo run:android
+```
+
+**Build & Run on iOS Simulator:**
+```bash
+npx expo run:ios
+```
+
+---
+
+## 📦 Building the App (EAS)
+
+### Install EAS CLI
+
+```bash
+npm install -g eas-cli
+eas login
+```
+
+### Preview build (internal testing)
+
+```bash
+# Android — produces a sideloadable .apk
+eas build -p android --profile preview
+
+# iOS — produces an ad-hoc .ipa
+eas build -p ios --profile preview
+
+# iOS — produces an ad-hoc .ipa (Local)
+eas build -p ios --profile preview --local
+```
+
+### Production build (store submission)
+
+```bash
+# Android — produces a signed .aab for Google Play
+eas build -p android --profile production
+
+# iOS — produces a signed .ipa for App Store
+eas build -p ios --profile production
+
+# Both platforms at once
+eas build --platform all --profile production
+
+# For iOS signed local build:
+eas build --profile production --platform ios --local
+
+# For Android signed local build:
+eas build --profile production --platform android --local
+```
+
+
+### Version bump before production
+
+Update `app.json` before each release:
+
+```json
+{
+  "expo": {
+    "version": "1.1.0",
+    "android": { "versionCode": 2 },
+    "ios": { "buildNumber": "2" }
+  }
+}
+```
+
+---
+
 ## 🗂 Project Structure
 
 ```

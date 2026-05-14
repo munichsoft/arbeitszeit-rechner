@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -32,6 +32,12 @@
       "expo-router",
       "expo-font"
     ],
-    "scheme": "arbeitszeit-rechner"
+    "scheme": "arbeitszeit-rechner",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bb0fa890-268a-4909-a164-b42e6ab9d6e0"
+      }
+    }
   }
 }
