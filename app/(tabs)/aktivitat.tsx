@@ -24,7 +24,7 @@ export default function AktivitaetScreen() {
   const t = useTranslation();
   const C = useThemeColors();
   const { entries, projects, getWeeklyHours, getTotalHoursForProject } = useTimeStore();
-  const { hourlyRate, currencySymbol, timeFormat, weeklyTargetHours, userName } = useSettingsStore();
+  const { hourlyRate, currencySymbol, timeFormat, weeklyTargetHours, userName, showEarnings } = useSettingsStore();
   const initials = userName ? userName.slice(0, 2).toUpperCase() : '?';
 
   const [activeView, setActiveView] = useState<ActiveView>('entries');
@@ -91,11 +91,15 @@ export default function AktivitaetScreen() {
               <Text style={[styles.summaryLabel, { color: C.onSurfaceVariant }]}>{t.this_week}</Text>
               <Text style={[styles.summaryValue, { color: C.onSurface }]}>{formatDuration(weeklyHours, timeFormat)}</Text>
             </View>
-            <View style={[styles.summaryDivider, { backgroundColor: C.cardBorder }]} />
-            <View style={styles.summaryItem}>
-              <Text style={[styles.summaryLabel, { color: C.onSurfaceVariant }]}>{t.earnings}</Text>
-              <Text style={[styles.summaryValue, { color: C.onSurface }]}>{weeklyEarnings} {currencySymbol}</Text>
-            </View>
+            {showEarnings && (
+              <>
+                <View style={[styles.summaryDivider, { backgroundColor: C.cardBorder }]} />
+                <View style={styles.summaryItem}>
+                  <Text style={[styles.summaryLabel, { color: C.onSurfaceVariant }]}>{t.earnings}</Text>
+                  <Text style={[styles.summaryValue, { color: C.onSurface }]}>{weeklyEarnings} {currencySymbol}</Text>
+                </View>
+              </>
+            )}
           </View>
 
           {entries.length === 0 ? (

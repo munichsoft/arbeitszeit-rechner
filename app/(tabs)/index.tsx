@@ -17,26 +17,66 @@ import { formatEarnings, formatDuration } from '../../utils/formatTime';
 import { runAllChecks } from '../../utils/germanLaborLaw';
 import type { TimeEntry } from '../../store/useTimeStore';
 
+type OvertimeMode = 'week' | 'month' | 'year';
+
+function formatOvertimeDelta(hours: number): string {
+  const abs = Math.abs(hours);
+  const h = Math.floor(abs);
+  const m = Math.round((abs - h) * 60);
+  const sign = hours >= 0 ? '+' : '−';
+  if (h === 0) return `${sign}${m}m`;
+  if (m === 0) return `${sign}${h}h`;
+  return `${sign}${h}h ${m}m`;
+}
+
 export default function DashboardScreen() {
   const router = useRouter();
   const t = useTranslation();
   const C = useThemeColors();
-  const { entries, projects, getWeeklyHours, getMonthlyHours, getTodayHours } = useTimeStore();
-  const { hourlyRate, currencySymbol, weeklyTargetHours, userName, timeFormat } = useSettingsStore();
+  const { entries, getWeeklyHours, getMonthlyHours, getTodayHours, getWeeklyOvertime, getCumulativeOvertime } = useTimeStore();
+  const { hourlyRate, currencySymbol, weeklyTargetHours, userName, timeFormat, showEarnings, jobStartDate } = useSettingsStore();
 
   const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [overtimeMode, setOvertimeMode] = useState<OvertimeMode>('week');
 
   const weeklyHours = getWeeklyHours();
   const monthlyHours = getMonthlyHours();
   const todayHours = getTodayHours();
   const todayEarnings = formatEarnings(todayHours, hourlyRate, currencySymbol);
 
+  // Overtime calculations
+  const weeklyOT = getWeeklyOvertime(weeklyTargetHours);
+  const now = new Date();
+  const jobFloor = jobStartDate ? new Date(jobStartDate) : null;
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startOfYear = new Date(now.getFullYear(), 0, 1);
+  // If jobStartDate is set, use it as floor (whichever is later)
+  const monthSince = jobFloor && jobFloor > startOfMonth ? jobFloor : startOfMonth;
+  const yearSince  = jobFloor ?? startOfYear;
+  // Cumulative past completed weeks + current running week delta
+  const monthlyOT = getCumulativeOvertime(weeklyTargetHours, monthSince) + weeklyOT;
+  const yearlyOT  = getCumulativeOvertime(weeklyTargetHours, yearSince)  + weeklyOT;
+
+  const activeOT = overtimeMode === 'week' ? weeklyOT : overtimeMode === 'month' ? monthlyOT : yearlyOT;
+  const otLabel = overtimeMode === 'week' ? t.overtime_this_week : overtimeMode === 'month' ? t.overtime_this_month : t.overtime_this_year;
+  const isPositive = activeOT >= 0;
+
+  // Green for surplus, rose-red for undertime
+  const otBg     = isPositive ? '#00C48C18' : '#FF445518';
+  const otBorder = isPositive ? '#00C48C55' : '#FF445555';
+  const otColor  = isPositive ? '#00A876'   : '#FF4455';
+  const otIconName: keyof typeof Ionicons.glyphMap = isPositive ? 'trending-up-outline' : 'trending-down-outline';
+
+  const cycleMode = () => {
+    setOvertimeMode(m => m === 'week' ? 'month' : m === 'month' ? 'year' : 'week');
+  };
+
   // ArbZG checks
   const todayEntries = entries.filter(e => {
     const d = new Date(e.startTime);
-    const now = new Date();
-    return d.toDateString() === now.toDateString();
+    const n = new Date();
+    return d.toDateString() === n.toDateString();
   });
   const warnings = runAllChecks(todayHours, todayHours, 30, todayEntries);
 
@@ -64,7 +104,7 @@ export default function DashboardScreen() {
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-              {/* ArbZG Warning */}
+        {/* ArbZG Warning */}
         {warnings.length > 0 && (
           <View style={[styles.warningBanner, { backgroundColor: C.warningAmber + '22', borderColor: C.warningAmber + '66' }]}>
             <Ionicons name="warning-outline" size={16} color={C.warningAmber} />
@@ -78,13 +118,15 @@ export default function DashboardScreen() {
         {/* Weekly Progress */}
         <WeeklyProgress currentHours={weeklyHours} targetHours={weeklyTargetHours} />
 
-                {/* Quick stat row */}
+        {/* Quick stat row */}
         <View style={styles.statRow}>
-          <View style={[styles.statCard, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
-            <Ionicons name="cash-outline" size={18} color={C.onSurfaceVariant} />
-            <Text style={[styles.statLabel, { color: C.onSurfaceVariant }]}>{t.todays_earnings}</Text>
-            <Text style={[styles.statValue, { color: C.onSurface }]}>{todayEarnings}</Text>
-          </View>
+          {showEarnings && (
+            <View style={[styles.statCard, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
+              <Ionicons name="cash-outline" size={18} color={C.onSurfaceVariant} />
+              <Text style={[styles.statLabel, { color: C.onSurfaceVariant }]}>{t.todays_earnings}</Text>
+              <Text style={[styles.statValue, { color: C.onSurface }]}>{todayEarnings}</Text>
+            </View>
+          )}
           <View style={[styles.statCard, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
             <Ionicons name="calendar-outline" size={18} color={C.onSurfaceVariant} />
             <Text style={[styles.statLabel, { color: C.onSurfaceVariant }]}>{t.monthly_hours}</Text>
@@ -92,7 +134,38 @@ export default function DashboardScreen() {
           </View>
         </View>
 
-                {/* Recent Entries */}
+        {/* Überstunden Tile */}
+        <TouchableOpacity
+          activeOpacity={0.82}
+          onPress={cycleMode}
+          style={[styles.overtimeTile, { backgroundColor: otBg, borderColor: otBorder }]}
+        >
+          {/* Left: icon + labels */}
+          <View style={styles.overtimeLeft}>
+            <View style={[styles.overtimeIconBg, { backgroundColor: otColor + '22' }]}>
+              <Ionicons name={otIconName} size={22} color={otColor} />
+            </View>
+            <View style={styles.overtimeLabelCol}>
+              <Text style={[styles.overtimeTitle, { color: otColor }]}>{t.overtime}</Text>
+              <View style={styles.overtimePeriodRow}>
+                <Text style={[styles.overtimePeriod, { color: otColor + 'BB' }]}>{otLabel}</Text>
+                <Ionicons name="chevron-forward" size={12} color={otColor + '99'} />
+              </View>
+            </View>
+          </View>
+
+          {/* Right: value */}
+          <View style={styles.overtimeRight}>
+            <Text style={[styles.overtimeValue, { color: otColor }]}>
+              {formatOvertimeDelta(activeOT)}
+            </Text>
+            {!isPositive && (
+              <Text style={[styles.overtimeHint, { color: otColor + 'BB' }]}>{t.overtime_undertime_hint}</Text>
+            )}
+          </View>
+        </TouchableOpacity>
+
+        {/* Recent Entries */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: C.onSurface }]}>{t.recent_entries}</Text>
           <TouchableOpacity onPress={() => router.push('/aktivitat')}>
@@ -140,6 +213,19 @@ const styles = StyleSheet.create({
   statCard: { flex: 1, borderRadius: Radius.xl, padding: Spacing.md, borderWidth: 1, ...Shadow.level1, gap: 4 },
   statLabel: { fontFamily: 'Inter_400Regular', fontSize: 12 },
   statValue: { fontFamily: 'Inter_700Bold', fontSize: 18 },
+
+  // Überstunden tile
+  overtimeTile: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: Radius.xl, borderWidth: 1.5, padding: Spacing.md, ...Shadow.level1 },
+  overtimeLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
+  overtimeIconBg: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
+  overtimeLabelCol: { gap: 2 },
+  overtimeTitle: { fontFamily: 'Inter_700Bold', fontSize: 15 },
+  overtimePeriodRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  overtimePeriod: { fontFamily: 'Inter_400Regular', fontSize: 12 },
+  overtimeRight: { alignItems: 'flex-end', gap: 2 },
+  overtimeValue: { fontFamily: 'Inter_700Bold', fontSize: 26 },
+  overtimeHint: { fontFamily: 'Inter_400Regular', fontSize: 11 },
+
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.xs },
   sectionTitle: { fontFamily: 'Inter_700Bold', fontSize: 18 },
   sectionLink: { fontFamily: 'Inter_500Medium', fontSize: 14 },

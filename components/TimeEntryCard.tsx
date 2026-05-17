@@ -19,7 +19,7 @@ export default function TimeEntryCard({ entry, onPress, onResume, compact = fals
   const t = useTranslation();
   const C = useThemeColors();
   const { projects, activeEntryId, stopTimer } = useTimeStore();
-  const { currencySymbol, hourlyRate, timeFormat } = useSettingsStore();
+  const { currencySymbol, hourlyRate, timeFormat, showEarnings } = useSettingsStore();
 
   const project = projects.find(p => p.id === entry.projectId);
   const isActive = entry.id === activeEntryId;
@@ -61,7 +61,9 @@ export default function TimeEntryCard({ entry, onPress, onResume, compact = fals
           </View>
           {!compact && (
             <View style={[styles.row, styles.bottomRow]}>
-              <Text style={[styles.earnings, { color: C.onSurface }]}>{entry.billable ? earnings : '—'}</Text>
+              {showEarnings && (
+                <Text style={[styles.earnings, { color: C.onSurface }]}>{entry.billable ? earnings : '—'}</Text>
+              )}
               <TouchableOpacity
                 onPress={() => isActive ? stopTimer() : onResume?.()}
                 style={[styles.actionBtn, { backgroundColor: isActive ? C.errorContainer : C.surfaceContainerLow }]}

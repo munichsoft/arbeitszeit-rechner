@@ -59,7 +59,7 @@ eas login
 
 ```bash
 # Android — produces a sideloadable .apk
-eas build -p android --profile preview
+eas build -p android --profile preview --local
 
 # iOS — produces an ad-hoc .ipa
 eas build -p ios --profile preview

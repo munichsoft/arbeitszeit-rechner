@@ -18,6 +18,8 @@ interface SettingsState {
   timeFormat: TimeFormat;
   pushNotifications: boolean;
   weeklyEmailSummary: boolean;
+  showEarnings: boolean;
+  jobStartDate: string | null; // ISO date string, used as floor for cumulative overtime
 
   setLanguage: (lang: Language) => void;
   setTheme: (theme: Theme) => void;
@@ -29,6 +31,8 @@ interface SettingsState {
   setTimeFormat: (format: TimeFormat) => void;
   setPushNotifications: (enabled: boolean) => void;
   setWeeklyEmailSummary: (enabled: boolean) => void;
+  setShowEarnings: (enabled: boolean) => void;
+  setJobStartDate: (date: string | null) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -44,6 +48,8 @@ export const useSettingsStore = create<SettingsState>()(
       timeFormat: 'HH:MM' as TimeFormat,
       pushNotifications: true,
       weeklyEmailSummary: false,
+      showEarnings: false,
+      jobStartDate: null,
 
       setLanguage: (lang) => set({ language: lang }),
       setTheme: (theme) => set({ theme }),
@@ -55,6 +61,8 @@ export const useSettingsStore = create<SettingsState>()(
       setTimeFormat: (format) => set({ timeFormat: format }),
       setPushNotifications: (enabled) => set({ pushNotifications: enabled }),
       setWeeklyEmailSummary: (enabled) => set({ weeklyEmailSummary: enabled }),
+      setShowEarnings: (enabled) => set({ showEarnings: enabled }),
+      setJobStartDate: (date) => set({ jobStartDate: date }),
     }),
     {
       name: 'settings-store-v3',

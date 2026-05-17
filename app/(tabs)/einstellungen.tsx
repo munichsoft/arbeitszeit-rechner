@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, TextInput, Alert, Platform,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/colors';
@@ -68,9 +69,9 @@ export default function EinstellungenScreen() {
     language, setLanguage,
     theme, setTheme,
     userName, userEmail, hourlyRate, currencySymbol, weeklyTargetHours,
-    timeFormat, pushNotifications,
+    timeFormat, pushNotifications, showEarnings, jobStartDate,
     setUserName, setUserEmail,
-    setHourlyRate, setCurrencySymbol, setWeeklyTargetHours, setTimeFormat, setPushNotifications,
+    setHourlyRate, setCurrencySymbol, setWeeklyTargetHours, setTimeFormat, setPushNotifications, setShowEarnings, setJobStartDate,
   } = useSettingsStore();
 
   const { entries, projects } = useTimeStore();
@@ -100,6 +101,14 @@ export default function EinstellungenScreen() {
 
   const saveRate = () => { const v = parseFloat(rateInput.replace(',', '.')); if (!isNaN(v) && v >= 0) setHourlyRate(v); setEditingRate(false); };
   const saveHours = () => { const v = parseFloat(hoursInput); if (!isNaN(v) && v > 0) setWeeklyTargetHours(v); setEditingHours(false); };
+
+  // Job start date picker state
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [tempStartDate, setTempStartDate] = useState(jobStartDate ? new Date(jobStartDate) : new Date());
+  const jobStartDateObj = jobStartDate ? new Date(jobStartDate) : null;
+  const jobStartDateLabel = jobStartDateObj
+    ? jobStartDateObj.toLocaleDateString(language === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+    : t.job_start_date_none;
 
   const handleExportCSV = async () => {
     try { await exportCSV(entries, projects, currencySymbol, hourlyRate); }
@@ -271,12 +280,47 @@ export default function EinstellungenScreen() {
           <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
           <SettingsRow icon="time-outline" label={t.time_format}
             value={timeFormat === 'HH:MM' ? '8:30h' : '8.5h'} onPress={() => setTimeFormat(timeFormat === 'HH:MM' ? 'decimal' : 'HH:MM')} />
-        </Section>
-
-        {/* ── Notifications ─────────────────────────── */}
-        <Section title={t.notifications}>
-          <SettingsRow icon="notifications-outline" label={t.push_notifications}
-            sublabel={t.push_notifications_hint} toggle toggleValue={pushNotifications} onToggle={setPushNotifications} />
+          <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+          <SettingsRow icon="cash-outline" label={t.show_earnings}
+            sublabel={t.show_earnings_hint} toggle toggleValue={showEarnings} onToggle={setShowEarnings} />
+          <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+          <SettingsRow
+            icon="calendar-outline"
+            label={t.job_start_date}
+            sublabel={t.job_start_date_hint}
+            value={jobStartDateLabel}
+            onPress={() => { setTempStartDate(jobStartDateObj ?? new Date()); setShowStartDatePicker(true); }}
+          />
+          {showStartDatePicker && Platform.OS === 'ios' && (
+            <View style={[styles.iosPickerWrapper, { borderTopColor: C.cardBorder }]}>
+              <View style={styles.iosPickerHeader}>
+                <TouchableOpacity onPress={() => setShowStartDatePicker(false)}>
+                  <Text style={[styles.iosPickerBtn, { color: C.outline }]}>{t.cancel}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => { setJobStartDate(tempStartDate.toISOString()); setShowStartDatePicker(false); }}>
+                  <Text style={[styles.iosPickerBtn, { color: C.actionBlue, fontFamily: 'Inter_600SemiBold' }]}>OK</Text>
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={tempStartDate}
+                mode="date"
+                display="spinner"
+                onChange={(_, d) => d && setTempStartDate(d)}
+                style={{ width: '100%' }}
+                themeVariant={C.background === '#0F1117' ? 'dark' : 'light'}
+                maximumDate={new Date()}
+              />
+            </View>
+          )}
+          {showStartDatePicker && Platform.OS === 'android' && (
+            <DateTimePicker
+              value={tempStartDate}
+              mode="date"
+              display="default"
+              maximumDate={new Date()}
+              onChange={(_, d) => { setShowStartDatePicker(false); if (d) setJobStartDate(d.toISOString()); }}
+            />
+          )}
         </Section>
 
         {/* ── Data & Backup ─────────────────────────── */}
@@ -371,6 +415,9 @@ const styles = StyleSheet.create({
   divider: { height: 1, marginLeft: Spacing.md + 28 + Spacing.sm },
   inlineEdit: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, gap: Spacing.sm, minHeight: 56 },
   inlineInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15, borderBottomWidth: 1.5, paddingVertical: 2 },
+  iosPickerWrapper: { borderTopWidth: 1 },
+  iosPickerHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs },
+  iosPickerBtn: { fontFamily: 'Inter_500Medium', fontSize: 15, paddingHorizontal: 4, paddingVertical: 4 },
 
   // ArbZG
   arbzgInfo: { flexDirection: 'row', gap: Spacing.sm, alignItems: 'flex-start', padding: Spacing.md },

@@ -53,6 +53,9 @@ interface TimeState {
   getWeeklyHours: () => number;
   getMonthlyHours: () => number;
   getTodayHours: () => number;
+  // Overtime: actual - target (negative = undertime)
+  getWeeklyOvertime: (targetHours: number) => number;
+  getCumulativeOvertime: (targetHours: number, since: Date) => number;
 }
 
 
@@ -199,6 +202,41 @@ export const useTimeStore = create<TimeState>()(
         return get().entries
           .filter(e => isToday(e.startTime))
           .reduce((acc, e) => acc + getDurationHours(e), 0);
+      },
+
+      getWeeklyOvertime: (targetHours) => {
+        return get().getWeeklyHours() - targetHours;
+      },
+
+      getCumulativeOvertime: (targetHours, since) => {
+        // Walk each completed Mon–Sun week from `since` up to (but not including) the current week.
+        // Sum (actual hours that week) - targetHours.
+        const now = new Date();
+        // Start of current week (Monday 00:00)
+        const currentWeekStart = new Date(now);
+        currentWeekStart.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+        currentWeekStart.setHours(0, 0, 0, 0);
+
+        // Align `since` to the Monday of its week
+        const cursor = new Date(since);
+        cursor.setDate(cursor.getDate() - (cursor.getDay() === 0 ? 6 : cursor.getDay() - 1));
+        cursor.setHours(0, 0, 0, 0);
+
+        let total = 0;
+        const { entries } = get();
+        while (cursor < currentWeekStart) {
+          const weekEnd = new Date(cursor);
+          weekEnd.setDate(cursor.getDate() + 7);
+          const hoursThisWeek = entries
+            .filter(e => {
+              const d = new Date(e.startTime);
+              return d >= cursor && d < weekEnd;
+            })
+            .reduce((acc, e) => acc + getDurationHours(e), 0);
+          total += hoursThisWeek - targetHours;
+          cursor.setDate(cursor.getDate() + 7);
+        }
+        return total;
       },
     }),
     {

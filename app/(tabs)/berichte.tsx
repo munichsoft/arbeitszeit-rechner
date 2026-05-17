@@ -24,7 +24,7 @@ export default function BerichteScreen() {
   const t = useTranslation();
   const C = useThemeColors();
   const { entries, projects } = useTimeStore();
-  const { hourlyRate, currencySymbol, userName } = useSettingsStore();
+  const { hourlyRate, currencySymbol, userName, showEarnings } = useSettingsStore();
   const initials = userName ? userName.slice(0, 2).toUpperCase() : '?';
 
   const now = new Date();
@@ -272,10 +272,12 @@ export default function BerichteScreen() {
                 <Text style={[styles.cardLabel, { color: C.onSurface }]}>{t.total_hours_stat}</Text>
                 <Text style={[styles.statBig, { color: C.onSurface }]}>{Math.floor(totalHours)}h {String(Math.round((totalHours % 1) * 60)).padStart(2,'0')}m</Text>
               </View>
-              <View style={[styles.statCard, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
-                <Text style={[styles.cardLabel, { color: C.onSurface }]}>{t.estimated_revenue}</Text>
-                <Text style={[styles.statBig, { color: C.actionBlue }]}>{currencySymbol}{(totalHours * hourlyRate).toFixed(0)}</Text>
-              </View>
+              {showEarnings && (
+                <View style={[styles.statCard, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
+                  <Text style={[styles.cardLabel, { color: C.onSurface }]}>{t.estimated_revenue}</Text>
+                  <Text style={[styles.statBig, { color: C.actionBlue }]}>{currencySymbol}{(totalHours * hourlyRate).toFixed(0)}</Text>
+                </View>
+              )}
             </View>
 
                         <View style={[styles.card, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
