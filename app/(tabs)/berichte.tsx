@@ -126,14 +126,15 @@ export default function BerichteScreen() {
       </View>
 
             {/* Tab: Create Report / Stats */}
-      <View style={[styles.toggleRow, { backgroundColor: C.surfaceContainerHighest }]}>
-        <TouchableOpacity style={[styles.toggleBtn, activeTab === 'create' && styles.toggleBtnActive, activeTab === 'create' && { backgroundColor: C.surface }]} onPress={() => setActiveTab('create')}>
-          <Ionicons name="document-text-outline" size={15} color={activeTab === 'create' ? C.actionBlue : C.outline} />
-          <Text style={[styles.toggleText, { color: activeTab === 'create' ? C.actionBlue : C.outline }, activeTab === 'create' && styles.toggleTextBold]}>{t.create_report}</Text>
+      <View style={[styles.toggleRow, { borderColor: C.actionBlue }]}>
+        <TouchableOpacity style={[styles.toggleBtn, { backgroundColor: activeTab === 'create' ? C.actionBlue : 'transparent' }]} onPress={() => setActiveTab('create')}>
+          <Ionicons name="document-text-outline" size={15} color={activeTab === 'create' ? '#fff' : C.actionBlue} />
+          <Text style={[styles.toggleText, { color: activeTab === 'create' ? '#fff' : C.actionBlue }, activeTab === 'create' && styles.toggleTextBold]}>{t.create_report}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.toggleBtn, activeTab === 'stats' && styles.toggleBtnActive, activeTab === 'stats' && { backgroundColor: C.surface }]} onPress={() => setActiveTab('stats')}>
-          <Ionicons name="bar-chart-outline" size={15} color={activeTab === 'stats' ? C.actionBlue : C.outline} />
-          <Text style={[styles.toggleText, { color: activeTab === 'stats' ? C.actionBlue : C.outline }, activeTab === 'stats' && styles.toggleTextBold]}>{t.performance}</Text>
+        <View style={{ width: 1.5, backgroundColor: C.actionBlue }} />
+        <TouchableOpacity style={[styles.toggleBtn, { backgroundColor: activeTab === 'stats' ? C.actionBlue : 'transparent' }]} onPress={() => setActiveTab('stats')}>
+          <Ionicons name="bar-chart-outline" size={15} color={activeTab === 'stats' ? '#fff' : C.actionBlue} />
+          <Text style={[styles.toggleText, { color: activeTab === 'stats' ? '#fff' : C.actionBlue }, activeTab === 'stats' && styles.toggleTextBold]}>{t.performance}</Text>
         </TouchableOpacity>
       </View>
 
@@ -146,7 +147,7 @@ export default function BerichteScreen() {
               <Text style={[styles.cardLabel, { color: C.onSurface }]}>{t.period}</Text>
               <View style={styles.chipRow}>
                 {RANGES.map(r => (
-                  <TouchableOpacity key={r.key} style={[styles.chip, { backgroundColor: C.surfaceContainerHighest, borderColor: C.cardBorder }, quickRange === r.key && { backgroundColor: C.secondaryFixed, borderColor: C.actionBlue }]} onPress={() => applyRange(r.key)}>
+                  <TouchableOpacity key={r.key} style={[styles.chip, { backgroundColor: C.surfaceContainerLow, borderColor: C.cardBorder }, quickRange === r.key && { backgroundColor: C.surface, borderColor: C.actionBlue }]} onPress={() => applyRange(r.key)}>
                     <Text style={[styles.chipText, { color: quickRange === r.key ? C.actionBlue : C.onSurfaceVariant }]}>{r.label}</Text>
                   </TouchableOpacity>
                 ))}
@@ -188,7 +189,7 @@ export default function BerichteScreen() {
                       <Text style={[styles.iosPickerBtn, { color: C.outline }]}>{t.cancel}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={confirmIosDate}>
-                      <Text style={[styles.iosPickerBtn, { color: C.actionBlue, fontFamily: 'Inter_600SemiBold' }]}>OK</Text>
+                      <Text style={[styles.iosPickerBtn, { color: C.actionBlue, fontFamily: 'Outfit_600SemiBold' }]}>OK</Text>
                     </TouchableOpacity>
                   </View>
                   <DateTimePicker
@@ -235,7 +236,7 @@ export default function BerichteScreen() {
                   { key: 'excel', label: t.excel_table, icon: 'grid-outline' },
                 ] as const).map(f => (
                   <TouchableOpacity key={f.key}
-                    style={[styles.formatCard, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }, exportFormat === f.key && { borderColor: C.actionBlue, backgroundColor: C.secondaryFixed }]}
+                    style={[styles.formatCard, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }, exportFormat === f.key && { borderColor: C.actionBlue, backgroundColor: C.surface }]}
                     onPress={() => setExportFormat(f.key)}>
                     <Ionicons name={f.icon} size={24} color={exportFormat === f.key ? C.actionBlue : C.outline} />
                     <Text style={[styles.formatLabel, { color: exportFormat === f.key ? C.actionBlue : C.outline }, exportFormat === f.key && styles.formatLabelActive]}>{f.label}</Text>
@@ -286,7 +287,7 @@ export default function BerichteScreen() {
                   return (
                     <G key={i}>
                       <Rect x={x} y={120 - barH} width={24} height={barH} rx={6} fill={i === 6 ? C.actionBlue : C.secondaryFixed} />
-                      <SvgText x={x + 12} y={136} textAnchor="middle" fontSize={10} fontFamily="Inter_400Regular" fill={C.onSurfaceVariant}>{b.label}</SvgText>
+                      <SvgText x={x + 12} y={136} textAnchor="middle" fontSize={10} fontFamily="Outfit_400Regular" fill={C.onSurfaceVariant}>{b.label}</SvgText>
                     </G>
                   );
                 })}
@@ -339,60 +340,60 @@ export default function BerichteScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.containerPadding, paddingVertical: Spacing.sm },
-  headerTitle: { fontFamily: 'Inter_700Bold', fontSize: 20 },
+  headerTitle: { fontFamily: 'Outfit_700Bold', fontSize: 20 },
   avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontFamily: 'Inter_600SemiBold', fontSize: 12 },
-  toggleRow: { flexDirection: 'row', marginHorizontal: Spacing.containerPadding, marginBottom: Spacing.sm, borderRadius: Radius.lg, padding: 3 },
-  toggleBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: Spacing.xs + 2, borderRadius: Radius.md },
-  toggleBtnActive: { ...Shadow.level1 },
-  toggleTextBold: { fontFamily: 'Inter_600SemiBold' },
-  toggleText: { fontFamily: 'Inter_500Medium', fontSize: 11 },
+  avatarText: { fontFamily: 'Outfit_600SemiBold', fontSize: 12 },
+  toggleRow: { flexDirection: 'row', marginHorizontal: Spacing.containerPadding, marginBottom: Spacing.sm, borderRadius: Radius.md, borderWidth: 1.5, overflow: 'hidden' },
+  toggleBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: Spacing.xs + 2 },
+  toggleBtnActive: {},
+  toggleTextBold: { fontFamily: 'Outfit_600SemiBold' },
+  toggleText: { fontFamily: 'Outfit_500Medium', fontSize: 11 },
   scroll: { flex: 1 },
   scrollContent: { padding: Spacing.containerPadding, gap: Spacing.sm },
-  subtitle: { fontFamily: 'Inter_400Regular', fontSize: 14 },
+  subtitle: { fontFamily: 'Outfit_400Regular', fontSize: 14 },
   card: { backgroundColor: Colors.surface, borderRadius: Radius.xl, padding: Spacing.md, borderWidth: 1, borderColor: Colors.cardBorder, ...Shadow.level1, gap: Spacing.xs },
-  cardLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: Colors.onSurface, marginBottom: 4 },
+  cardLabel: { fontFamily: 'Outfit_600SemiBold', fontSize: 14, color: Colors.onSurface, marginBottom: 4 },
   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  selectAll: { fontFamily: 'Inter_500Medium', fontSize: 13, color: Colors.actionBlue },
+  selectAll: { fontFamily: 'Outfit_500Medium', fontSize: 13, color: Colors.actionBlue },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.xs },
-  chip: { borderRadius: Radius.full, paddingHorizontal: Spacing.sm, paddingVertical: 6, backgroundColor: Colors.surfaceContainerHighest, borderWidth: 1, borderColor: Colors.cardBorder },
-  chipActive: { backgroundColor: Colors.secondaryFixed, borderColor: Colors.actionBlue },
-  chipText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: Colors.onSurfaceVariant },
+  chip: { borderRadius: Radius.full, paddingHorizontal: Spacing.sm, paddingVertical: 6, backgroundColor: Colors.surfaceContainerLow, borderWidth: 1, borderColor: Colors.cardBorder },
+  chipActive: { backgroundColor: Colors.surface, borderColor: Colors.actionBlue },
+  chipText: { fontFamily: 'Outfit_500Medium', fontSize: 13, color: Colors.onSurfaceVariant },
   chipTextActive: { color: Colors.actionBlue },
-  dateRangeText: { fontFamily: 'Inter_500Medium', fontSize: 13, color: Colors.onSurface, marginTop: 4 },
-  noProjects: { fontFamily: 'Inter_400Regular', fontSize: 14, color: Colors.onSurfaceVariant, paddingVertical: Spacing.sm },
+  dateRangeText: { fontFamily: 'Outfit_500Medium', fontSize: 13, color: Colors.onSurface, marginTop: 4 },
+  noProjects: { fontFamily: 'Outfit_400Regular', fontSize: 14, color: Colors.onSurfaceVariant, paddingVertical: Spacing.sm },
   checkRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, paddingVertical: 6, minHeight: 44 },
   checkbox: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: Colors.outline, alignItems: 'center', justifyContent: 'center' },
   checkboxActive: { backgroundColor: Colors.actionBlue, borderColor: Colors.actionBlue },
-  checkLabel: { fontFamily: 'Inter_500Medium', fontSize: 14, color: Colors.onSurface, flex: 1 },
-  checkSub: { fontFamily: 'Inter_400Regular', fontSize: 12, color: Colors.onSurfaceVariant },
+  checkLabel: { fontFamily: 'Outfit_500Medium', fontSize: 14, color: Colors.onSurface, flex: 1 },
+  checkSub: { fontFamily: 'Outfit_400Regular', fontSize: 12, color: Colors.onSurfaceVariant },
   formatRow: { flexDirection: 'row', gap: Spacing.sm },
   formatCard: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1.5, borderColor: Colors.cardBorder, borderRadius: Radius.lg, padding: Spacing.sm, backgroundColor: Colors.surfaceContainerLow, minHeight: 88 },
-  formatCardActive: { borderColor: Colors.actionBlue, backgroundColor: Colors.secondaryFixed },
-  formatLabel: { fontFamily: 'Inter_500Medium', fontSize: 13, color: Colors.outline, textAlign: 'center' },
-  formatLabelActive: { color: Colors.actionBlue, fontFamily: 'Inter_600SemiBold' },
+  formatCardActive: { borderColor: Colors.actionBlue, backgroundColor: Colors.surface },
+  formatLabel: { fontFamily: 'Outfit_500Medium', fontSize: 13, color: Colors.outline, textAlign: 'center' },
+  formatLabelActive: { color: Colors.actionBlue, fontFamily: 'Outfit_600SemiBold' },
   summaryFooter: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: Spacing.sm },
   summaryItem: { alignItems: 'center', gap: 2 },
-  summaryNum: { fontFamily: 'Inter_700Bold', fontSize: 22, color: Colors.onSurface },
-  summaryLbl: { fontFamily: 'Inter_400Regular', fontSize: 12, color: Colors.onSurfaceVariant },
+  summaryNum: { fontFamily: 'Outfit_700Bold', fontSize: 22, color: Colors.onSurface },
+  summaryLbl: { fontFamily: 'Outfit_400Regular', fontSize: 12, color: Colors.onSurfaceVariant },
   exportBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.xs, backgroundColor: Colors.actionBlue, borderRadius: Radius.lg, padding: Spacing.md + 2, minHeight: 64, ...Shadow.actionBlueGlow },
   exportBtnDisabled: { opacity: 0.4 },
-  exportBtnText: { fontFamily: 'Inter_700Bold', fontSize: 17, color: '#fff' },
+  exportBtnText: { fontFamily: 'Outfit_700Bold', fontSize: 17, color: '#fff' },
   statRow: { flexDirection: 'row', gap: Spacing.sm },
   statCard: { flex: 1, backgroundColor: Colors.surface, borderRadius: Radius.xl, padding: Spacing.md, borderWidth: 1, borderColor: Colors.cardBorder, ...Shadow.level1 },
-  statBig: { fontFamily: 'Inter_700Bold', fontSize: 24, color: Colors.onSurface, marginTop: 4 },
+  statBig: { fontFamily: 'Outfit_700Bold', fontSize: 24, color: Colors.onSurface, marginTop: 4 },
   projectRow: { gap: 4, paddingVertical: 4 },
   projectRowTop: { flexDirection: 'row', justifyContent: 'space-between' },
-  projectRowName: { fontFamily: 'Inter_400Regular', fontSize: 14, color: Colors.onSurface },
-  projectRowHours: { fontFamily: 'Inter_500Medium', fontSize: 14, color: Colors.onSurfaceVariant },
+  projectRowName: { fontFamily: 'Outfit_400Regular', fontSize: 14, color: Colors.onSurface },
+  projectRowHours: { fontFamily: 'Outfit_500Medium', fontSize: 14, color: Colors.onSurfaceVariant },
   progressTrack: { height: 6, backgroundColor: Colors.surfaceContainerHighest, borderRadius: Radius.full, overflow: 'hidden' },
   progressFill: { height: '100%', borderRadius: Radius.full },
   // Date picker
   datePickerRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, marginTop: Spacing.xs },
   datePickerBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs + 2, minHeight: 44 },
-  datePickerText: { fontFamily: 'Inter_500Medium', fontSize: 13 },
-  datePickerSep: { fontFamily: 'Inter_400Regular', fontSize: 16 },
+  datePickerText: { fontFamily: 'Outfit_500Medium', fontSize: 13 },
+  datePickerSep: { fontFamily: 'Outfit_400Regular', fontSize: 16 },
   iosPickerInner: { marginTop: Spacing.sm, borderTopWidth: 1 },
   iosPickerHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs },
-  iosPickerBtn: { fontFamily: 'Inter_500Medium', fontSize: 15, paddingHorizontal: 4, paddingVertical: 4 },
+  iosPickerBtn: { fontFamily: 'Outfit_500Medium', fontSize: 15, paddingHorizontal: 4, paddingVertical: 4 },
 });

@@ -56,7 +56,7 @@ export default function TimerDisplay({ onProjectPress }: TimerDisplayProps) {
       </Text>
 
       {isRunning && (
-        <Pressable onPress={onProjectPress} style={[styles.projectChip, { backgroundColor: C.secondaryFixed }]}>
+        <Pressable onPress={onProjectPress} style={[styles.projectChip, { backgroundColor: C.surface, borderWidth: 1, borderColor: C.actionBlue }]}>
           <Ionicons name="briefcase-outline" size={13} color={C.actionBlue} />
           <Text style={[styles.projectChipText, { color: C.actionBlue }]} numberOfLines={1}>
             {project ? project.name : t.no_assignment}
@@ -87,10 +87,10 @@ const styles = StyleSheet.create({
     alignItems: 'center', borderWidth: 1, gap: Spacing.sm,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
   },
-  sessionLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 12, letterSpacing: 0.6 },
-  timerText: { fontFamily: 'Inter_700Bold', fontSize: 52, lineHeight: 60, letterSpacing: -1.04 },
+  sessionLabel: { fontFamily: 'Outfit_600SemiBold', fontSize: 12, letterSpacing: 0.6 },
+  timerText: { fontFamily: 'Outfit_700Bold', fontSize: 56, lineHeight: 64, letterSpacing: -1.04 },
   projectChip: { flexDirection: 'row', alignItems: 'center', gap: 5, borderRadius: Radius.full, paddingHorizontal: Spacing.md, paddingVertical: 5, maxWidth: '80%' },
-  projectChipText: { fontFamily: 'Inter_500Medium', fontSize: 13 },
+  projectChipText: { fontFamily: 'Outfit_500Medium', fontSize: 13 },
   button: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: Spacing.xs, borderRadius: Radius.lg, paddingVertical: Spacing.md, width: '100%', marginTop: Spacing.xs, minHeight: 64 },
-  buttonText: { fontFamily: 'Inter_700Bold', fontSize: 18, color: '#fff' },
+  buttonText: { fontFamily: 'Outfit_700Bold', fontSize: 18, color: '#fff' },
 });

@@ -12,32 +12,32 @@ export const Spacing = {
 export const Radius = {
   sm: 4,
   md: 8,
-  lg: 12,   // inputs, buttons
-  xl: 16,   // cards, modals
-  xxl: 24,
+  lg: 16,   // inputs, buttons (softer)
+  xl: 20,   // cards, modals (softer)
+  xxl: 28,
   full: 9999,
 } as const;
 
 export const Shadow = {
   level1: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
   },
   level2: {
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.08,
-    shadowRadius: 16,
+    shadowRadius: 24,
     elevation: 8,
   },
   actionBlueGlow: {
-    shadowColor: '#0058BE',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#10B981', // Updated to Emerald Green
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
-    shadowRadius: 12,
+    shadowRadius: 16,
     elevation: 10,
   },
 } as const;

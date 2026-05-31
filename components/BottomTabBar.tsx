@@ -54,6 +54,6 @@ const styles = StyleSheet.create({
   wrapper: { position: 'absolute', bottom: 0, left: 0, right: 0, borderTopWidth: 1 },
   inner: { flexDirection: 'row', paddingTop: 8, paddingBottom: 4, paddingHorizontal: 8 },
   tab: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 3, paddingVertical: 6, minHeight: 52 },
-  label: { fontFamily: 'Inter_400Regular', fontSize: 11, textAlign: 'center' },
-  labelActive: { fontFamily: 'Inter_600SemiBold' },
+  label: { fontFamily: 'Outfit_400Regular', fontSize: 11, textAlign: 'center' },
+  labelActive: { fontFamily: 'Outfit_600SemiBold' },
 });

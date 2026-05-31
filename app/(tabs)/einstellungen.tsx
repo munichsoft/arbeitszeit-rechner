@@ -301,7 +301,7 @@ export default function EinstellungenScreen() {
                   <Text style={[styles.iosPickerBtn, { color: C.outline }]}>{t.cancel}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { setJobStartDate(tempStartDate.toISOString()); setShowStartDatePicker(false); }}>
-                  <Text style={[styles.iosPickerBtn, { color: C.actionBlue, fontFamily: 'Inter_600SemiBold' }]}>OK</Text>
+                  <Text style={[styles.iosPickerBtn, { color: C.actionBlue, fontFamily: 'Outfit_600SemiBold' }]}>OK</Text>
                 </TouchableOpacity>
               </View>
               <DateTimePicker
@@ -349,56 +349,56 @@ export default function EinstellungenScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: Colors.background },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.containerPadding, paddingVertical: Spacing.sm },
-  headerTitle: { fontFamily: 'Inter_700Bold', fontSize: 20, color: Colors.onSurface },
+  headerTitle: { fontFamily: 'Outfit_700Bold', fontSize: 20, color: Colors.onSurface },
   avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontFamily: 'Inter_600SemiBold', fontSize: 12 },
+  avatarText: { fontFamily: 'Outfit_600SemiBold', fontSize: 12 },
   scroll: { flex: 1 },
   scrollContent: { padding: Spacing.containerPadding, gap: Spacing.md },
 
     // Profile card
   profileCard: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, borderRadius: Radius.xl, padding: Spacing.md, borderWidth: 1, ...Shadow.level1 },
   profileAvatar: { width: 56, height: 56, borderRadius: 28, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  profileAvatarText: { fontFamily: 'Inter_700Bold', fontSize: 20 },
+  profileAvatarText: { fontFamily: 'Outfit_700Bold', fontSize: 20 },
   profileInfo: { flex: 1 },
-  profileName: { fontFamily: 'Inter_700Bold', fontSize: 18 },
-  profileEmail: { fontFamily: 'Inter_400Regular', fontSize: 13, marginTop: 2 },
+  profileName: { fontFamily: 'Outfit_700Bold', fontSize: 18 },
+  profileEmail: { fontFamily: 'Outfit_400Regular', fontSize: 13, marginTop: 2 },
   editIconBtn: { padding: 4 },
 
   // Profile edit mode
   profileEditContainer: { flex: 1, gap: Spacing.xs },
   profileInputRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.sm, paddingVertical: 10 },
-  profileInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15 },
+  profileInput: { flex: 1, fontFamily: 'Outfit_400Regular', fontSize: 15 },
   profileEditActions: { flexDirection: 'row', gap: Spacing.xs, marginTop: 4 },
   profileCancelBtn: { flex: 1, borderWidth: 1, borderRadius: Radius.md, paddingVertical: Spacing.sm, paddingHorizontal: Spacing.xs, alignItems: 'center', justifyContent: 'center', minHeight: 40 },
-  profileCancelText: { fontFamily: 'Inter_500Medium', fontSize: 14 },
+  profileCancelText: { fontFamily: 'Outfit_500Medium', fontSize: 14 },
   profileSaveBtn: { flex: 2, borderRadius: Radius.md, paddingVertical: Spacing.sm, paddingHorizontal: Spacing.xs, alignItems: 'center', justifyContent: 'center', minHeight: 40 },
-  profileSaveText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#fff' },
+  profileSaveText: { fontFamily: 'Outfit_600SemiBold', fontSize: 14, color: '#fff' },
 
     // Section
   section: { gap: 6 },
-  sectionTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 13, paddingHorizontal: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionTitle: { fontFamily: 'Outfit_600SemiBold', fontSize: 13, paddingHorizontal: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
   sectionCard: { borderRadius: Radius.xl, borderWidth: 1, ...Shadow.level1, overflow: 'hidden' },
 
   // Language
   langRow: { padding: Spacing.sm, gap: Spacing.xs },
   langBtn: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm, padding: Spacing.sm, borderRadius: Radius.lg, borderWidth: 1.5, minHeight: 56 },
   langFlag: { fontSize: 24 },
-  langLabel: { fontFamily: 'Inter_500Medium', fontSize: 16, flex: 1 },
-  langLabelActive: { fontFamily: 'Inter_700Bold' },
+  langLabel: { fontFamily: 'Outfit_500Medium', fontSize: 16, flex: 1 },
+  langLabelActive: { fontFamily: 'Outfit_700Bold' },
 
   // Theme picker
   themeRow: { flexDirection: 'row', padding: Spacing.sm, gap: Spacing.xs },
   themeBtn: { flex: 1, alignItems: 'center', gap: 4, padding: Spacing.sm, borderRadius: Radius.lg, borderWidth: 1.5, minHeight: 76, justifyContent: 'center' },
   themeEmoji: { fontSize: 22 },
-  themeLabel: { fontFamily: 'Inter_500Medium', fontSize: 12, textAlign: 'center' },
+  themeLabel: { fontFamily: 'Outfit_500Medium', fontSize: 12, textAlign: 'center' },
 
   // Settings rows
   row: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm + 4, gap: Spacing.sm, minHeight: 56 },
   rowIcon: { width: 28, alignItems: 'center' },
   rowContent: { flex: 1 },
-  rowLabel: { fontFamily: 'Inter_500Medium', fontSize: 15 },
-  rowSublabel: { fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 1 },
-  rowValue: { fontFamily: 'Inter_400Regular', fontSize: 14 },
+  rowLabel: { fontFamily: 'Outfit_500Medium', fontSize: 15 },
+  rowSublabel: { fontFamily: 'Outfit_400Regular', fontSize: 12, marginTop: 1 },
+  rowValue: { fontFamily: 'Outfit_400Regular', fontSize: 14 },
   dropdownContainer: { position: 'relative' },
   dropdownFloat: {
     position: 'absolute',
@@ -418,12 +418,12 @@ const styles = StyleSheet.create({
   dropdownItem: { borderTopWidth: StyleSheet.hairlineWidth },
   divider: { height: 1, marginLeft: Spacing.md + 28 + Spacing.sm },
   inlineEdit: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm, gap: Spacing.sm, minHeight: 56 },
-  inlineInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15, borderBottomWidth: 1.5, paddingVertical: 2 },
+  inlineInput: { flex: 1, fontFamily: 'Outfit_400Regular', fontSize: 15, borderBottomWidth: 1.5, paddingVertical: 2 },
   iosPickerWrapper: { borderTopWidth: 1 },
   iosPickerHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs },
-  iosPickerBtn: { fontFamily: 'Inter_500Medium', fontSize: 15, paddingHorizontal: 4, paddingVertical: 4 },
+  iosPickerBtn: { fontFamily: 'Outfit_500Medium', fontSize: 15, paddingHorizontal: 4, paddingVertical: 4 },
 
   // ArbZG
   arbzgInfo: { flexDirection: 'row', gap: Spacing.sm, alignItems: 'flex-start', padding: Spacing.md },
-  arbzgText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 13, lineHeight: 20 },
+  arbzgText: { flex: 1, fontFamily: 'Outfit_400Regular', fontSize: 13, lineHeight: 20 },
 });

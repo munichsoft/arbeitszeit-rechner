@@ -92,14 +92,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   value: {
-    fontFamily: 'Inter_700Bold',
+    fontFamily: 'Outfit_700Bold',
     fontSize: 22,
     lineHeight: 28,
     color: Colors.onSurface,
     marginBottom: 2,
   },
   subtitle: {
-    fontFamily: 'Inter_500Medium',
+    fontFamily: 'Outfit_500Medium',
     fontSize: 12,
     marginTop: 2,
   },

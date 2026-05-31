@@ -1,111 +1,110 @@
-// ── Light palette (default) ───────────────────────────────────────────────────
+// ── Light palette (Natural & Engaging) ─────────────────────────────────────────
 export const LightColors = {
-  background: '#F7F9FB',
+  background: '#FFFFFF', // Pure white
   surface: '#FFFFFF',
   surfaceContainerLowest: '#FFFFFF',
-  surfaceContainerLow: '#F2F4F6',
-  surfaceContainer: '#ECEEF0',
-  surfaceContainerHigh: '#E6E8EA',
-  surfaceContainerHighest: '#E0E3E5',
-  surfaceDim: '#D8DADC',
+  surfaceContainerLow: '#FFFFFF', // Pure white
+  surfaceContainer: '#E5E7EB',
+  surfaceContainerHigh: '#D1D5DB',
+  surfaceContainerHighest: '#9CA3AF',
+  surfaceDim: '#D1D5DB',
 
-  primary: '#091426',
-  primaryContainer: '#1E293B',
+  primary: '#10B981', // Emerald Green
+  primaryContainer: '#D1FAE5',
   onPrimary: '#FFFFFF',
-  onPrimaryContainer: '#8590A6',
+  onPrimaryContainer: '#065F46',
 
-  secondary: '#0058BE',
-  secondaryContainer: '#2170E4',
+  secondary: '#0F766E', // Teal
+  secondaryContainer: '#CCFBF1',
   onSecondary: '#FFFFFF',
-  onSecondaryContainer: '#FEFCFF',
+  onSecondaryContainer: '#115E59',
 
-  actionBlue: '#0058BE',
-  activeBlue: '#2170E4',
-  actionBlueGlow: 'rgba(0,88,190,0.25)',
+  actionBlue: '#10B981', // Keeping key name for compatibility, but color is Emerald
+  activeBlue: '#059669',
+  actionBlueGlow: 'rgba(16, 185, 129, 0.25)',
 
-  onSurface: '#191C1E',
-  onSurfaceVariant: '#45474C',
-  inverseSurface: '#2D3133',
-  inverseOnSurface: '#EFF1F3',
+  onSurface: '#111827', // Darker, readable gray instead of harsh black
+  onSurfaceVariant: '#4B5563',
+  inverseSurface: '#1F2937',
+  inverseOnSurface: '#F3F4F6',
 
-  outline: '#75777D',
-  outlineVariant: '#C5C6CD',
-  cardBorder: '#E0E3E5',
+  outline: '#9CA3AF',
+  outlineVariant: '#E5E7EB',
+  cardBorder: '#E5E7EB',
 
-  error: '#BA1A1A',
+  error: '#EF4444', // Red variant
   onError: '#FFFFFF',
-  errorContainer: '#FFDAD6',
-  onErrorContainer: '#93000A',
+  errorContainer: '#FEE2E2',
+  onErrorContainer: '#991B1B',
 
-  primaryFixed: '#D8E3FB',
-  primaryFixedDim: '#BCC7DE',
-  secondaryFixed: '#D8E2FF',
-  secondaryFixedDim: '#ADC6FF',
+  primaryFixed: '#A7F3D0',
+  primaryFixedDim: '#6EE7B7',
+  secondaryFixed: '#99F6E4',
+  secondaryFixedDim: '#5EEAD4',
 
-  successGreen: '#1A7A4A',
-  warningAmber: '#B45309',
+  successGreen: '#10B981', // Green variant
+  warningAmber: '#F59E0B', // Yellow variant
 
   overlay: 'rgba(0,0,0,0.4)',
-  glassBackground: 'rgba(247,249,251,0.85)',
+  glassBackground: 'rgba(249,250,251,0.85)',
   shadowColor: '#000000',
   tabBarBg: '#FFFFFF',
 } as const;
 
 // ── Dark palette ──────────────────────────────────────────────────────────────
 export const DarkColors = {
-  background: '#0F1117',
-  surface: '#161B24',
-  surfaceContainerLowest: '#0C1019',
-  surfaceContainerLow: '#1A2030',
-  surfaceContainer: '#1E2638',
-  surfaceContainerHigh: '#222C3C',
-  surfaceContainerHighest: '#283244',
-  surfaceDim: '#0A0E16',
+  background: '#111827', // Deep slate
+  surface: '#1F2937',
+  surfaceContainerLowest: '#030712',
+  surfaceContainerLow: '#1F2937',
+  surfaceContainer: '#374151',
+  surfaceContainerHigh: '#4B5563',
+  surfaceContainerHighest: '#6B7280',
+  surfaceDim: '#111827',
 
-  primary: '#E2E8F4',
-  primaryContainer: '#1A2D52',
-  onPrimary: '#0F1117',
-  onPrimaryContainer: '#8BAAD8',
+  primary: '#34D399', // Bright emerald for dark mode
+  primaryContainer: '#065F46',
+  onPrimary: '#022C22',
+  onPrimaryContainer: '#A7F3D0',
 
-  secondary: '#5BA3FF',
-  secondaryContainer: '#79B8FF',
-  onSecondary: '#0F1117',
-  onSecondaryContainer: '#0F1117',
+  secondary: '#2DD4BF', // Bright teal
+  secondaryContainer: '#115E59',
+  onSecondary: '#042F2E',
+  onSecondaryContainer: '#99F6E4',
 
-  actionBlue: '#5BA3FF',
-  activeBlue: '#79B8FF',
-  actionBlueGlow: 'rgba(91,163,255,0.30)',
+  actionBlue: '#34D399',
+  activeBlue: '#6EE7B7',
+  actionBlueGlow: 'rgba(52, 211, 153, 0.30)',
 
-  onSurface: '#E2E8F4',
-  onSurfaceVariant: '#8892A4',
-  inverseSurface: '#E2E8F4',
-  inverseOnSurface: '#2D3448',
+  onSurface: '#F9FAFB',
+  onSurfaceVariant: '#9CA3AF',
+  inverseSurface: '#F3F4F6',
+  inverseOnSurface: '#1F2937',
 
-  outline: '#56637A',
-  outlineVariant: '#2A3448',
-  cardBorder: '#2A3448',
+  outline: '#6B7280',
+  outlineVariant: '#374151',
+  cardBorder: '#374151',
 
-  error: '#FF6B6B',
-  onError: '#0F1117',
-  errorContainer: 'rgba(255,107,107,0.18)',
-  onErrorContainer: '#FFAAAA',
+  error: '#F87171',
+  onError: '#450A0A',
+  errorContainer: 'rgba(248,113,113,0.18)',
+  onErrorContainer: '#FECACA',
 
-  primaryFixed: '#1A2D52',
-  primaryFixedDim: '#1A2D52',
-  secondaryFixed: '#1A2D52',
-  secondaryFixedDim: '#152040',
+  primaryFixed: '#065F46',
+  primaryFixedDim: '#064E3B',
+  secondaryFixed: '#115E59',
+  secondaryFixedDim: '#134E4A',
 
-  successGreen: '#34C77A',
-  warningAmber: '#F59E0B',
+  successGreen: '#34D399',
+  warningAmber: '#FBBF24',
 
   overlay: 'rgba(0,0,0,0.6)',
-  glassBackground: 'rgba(15,17,23,0.85)',
+  glassBackground: 'rgba(17,24,39,0.85)',
   shadowColor: '#000000',
-  tabBarBg: '#161B24',
+  tabBarBg: '#1F2937',
 } as const;
 
 export type ColorPalette = typeof LightColors;
 export type ColorKey = keyof ColorPalette;
 
-// Legacy default export so existing non-themed imports still compile
 export const Colors = LightColors;

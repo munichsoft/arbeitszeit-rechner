@@ -220,7 +220,7 @@ export default function EntryEditModal({ visible, entry, onClose }: EntryEditMod
                 <View style={[styles.pickerDropdown, { borderColor: C.cardBorder, backgroundColor: C.surface }]}>
                   {projects.map(p => (
                     <TouchableOpacity key={p.id}
-                      style={[styles.pickerItem, { borderBottomColor: C.cardBorder }, p.id === selectedProjectId && { backgroundColor: C.secondaryFixed }]}
+                      style={[styles.pickerItem, { borderBottomColor: C.cardBorder }, p.id === selectedProjectId && { backgroundColor: C.surface }]}
                       onPress={() => { setSelectedProjectId(p.id); setProjectPickerOpen(false); }}>
                       <Text style={[styles.pickerItemText, { color: p.id === selectedProjectId ? C.actionBlue : C.onSurface }]}>
                         {p.name} — {p.client}
@@ -266,7 +266,7 @@ export default function EntryEditModal({ visible, entry, onClose }: EntryEditMod
                 {pickerMode === 'date' ? t.date : pickerMode === 'start' ? t.start_time : t.end_time}
               </Text>
               <TouchableOpacity onPress={confirmPicker}>
-                <Text style={[styles.iosPickerBtn, { color: C.actionBlue, fontFamily: 'Inter_600SemiBold' }]}>OK</Text>
+                <Text style={[styles.iosPickerBtn, { color: C.actionBlue, fontFamily: 'Outfit_600SemiBold' }]}>OK</Text>
               </TouchableOpacity>
             </View>
             <DateTimePicker
@@ -312,31 +312,31 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   deleteIconBtn: { padding: 4 },
-  title: { fontFamily: 'Inter_600SemiBold', fontSize: 22 },
+  title: { fontFamily: 'Outfit_600SemiBold', fontSize: 22 },
   scroll: { flex: 1, padding: Spacing.md },
   formCard: { borderRadius: Radius.xl, padding: Spacing.md, gap: Spacing.md, borderWidth: 1 },
   field: { gap: 4 },
-  fieldLabel: { fontFamily: 'Inter_500Medium', fontSize: 13 },
+  fieldLabel: { fontFamily: 'Outfit_500Medium', fontSize: 13 },
   timeRow: { flexDirection: 'row' },
   inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.sm, minHeight: 52 },
   inputIcon: { marginRight: Spacing.xs },
-  inputText: { fontFamily: 'Inter_400Regular', fontSize: 15 },
+  inputText: { fontFamily: 'Outfit_400Regular', fontSize: 15 },
   textarea: { minHeight: 88, alignItems: 'flex-start', paddingTop: Spacing.sm },
   pickerDropdown: { borderWidth: 1, borderRadius: Radius.lg, overflow: 'hidden', marginTop: -Spacing.xs },
   pickerItem: { padding: Spacing.sm, borderBottomWidth: 1 },
-  pickerItemText: { fontFamily: 'Inter_400Regular', fontSize: 14 },
+  pickerItemText: { fontFamily: 'Outfit_400Regular', fontSize: 14 },
   toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderRadius: Radius.lg, padding: Spacing.sm, minHeight: 64 },
-  toggleLabel: { fontFamily: 'Inter_500Medium', fontSize: 15 },
-  toggleSub: { fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
+  toggleLabel: { fontFamily: 'Outfit_500Medium', fontSize: 15 },
+  toggleSub: { fontFamily: 'Outfit_400Regular', fontSize: 12, marginTop: 2 },
   actions: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm, paddingBottom: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth },
   cancelBtn: { flex: 1, borderWidth: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },
-  cancelText: { fontFamily: 'Inter_500Medium', fontSize: 14 },
+  cancelText: { fontFamily: 'Outfit_500Medium', fontSize: 14 },
   saveBtn: { flex: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },
-  saveText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#fff' },
+  saveText: { fontFamily: 'Outfit_600SemiBold', fontSize: 14, color: '#fff' },
   // iOS picker sheet
   iosPickerSheet: { borderTopWidth: 1, paddingBottom: 24 },
   iosPickerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
-  iosPickerTitle: { fontFamily: 'Inter_600SemiBold', fontSize: 15 },
-  iosPickerBtn: { fontFamily: 'Inter_500Medium', fontSize: 15, paddingHorizontal: 4, paddingVertical: 4 },
+  iosPickerTitle: { fontFamily: 'Outfit_600SemiBold', fontSize: 15 },
+  iosPickerBtn: { fontFamily: 'Outfit_500Medium', fontSize: 15, paddingHorizontal: 4, paddingVertical: 4 },
   iosPickerControl: { width: '100%' },
 });

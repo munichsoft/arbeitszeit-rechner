@@ -66,20 +66,21 @@ export default function AktivitaetScreen() {
       </View>
 
       {/* Toggle: Shifts / Jobs */}
-      <View style={[styles.toggleRow, { backgroundColor: C.surfaceContainerHighest }]}>
+      <View style={[styles.toggleRow, { borderColor: C.actionBlue }]}>
         <TouchableOpacity
-          style={[styles.toggleBtn, activeView === 'entries' && styles.toggleBtnActive, activeView === 'entries' && { backgroundColor: C.surface }]}
+          style={[styles.toggleBtn, { backgroundColor: activeView === 'entries' ? C.actionBlue : 'transparent' }]}
           onPress={() => setActiveView('entries')}
         >
-          <Ionicons name="time-outline" size={15} color={activeView === 'entries' ? C.actionBlue : C.outline} />
-          <Text style={[styles.toggleText, { color: activeView === 'entries' ? C.actionBlue : C.outline }, activeView === 'entries' && styles.toggleTextBold]}>{t.my_shifts}</Text>
+          <Ionicons name="time-outline" size={15} color={activeView === 'entries' ? '#fff' : C.actionBlue} />
+          <Text style={[styles.toggleText, { color: activeView === 'entries' ? '#fff' : C.actionBlue }, activeView === 'entries' && styles.toggleTextBold]}>{t.my_shifts}</Text>
         </TouchableOpacity>
+        <View style={{ width: 1.5, backgroundColor: C.actionBlue }} />
         <TouchableOpacity
-          style={[styles.toggleBtn, activeView === 'projects' && styles.toggleBtnActive, activeView === 'projects' && { backgroundColor: C.surface }]}
+          style={[styles.toggleBtn, { backgroundColor: activeView === 'projects' ? C.actionBlue : 'transparent' }]}
           onPress={() => setActiveView('projects')}
         >
-          <Ionicons name="briefcase-outline" size={15} color={activeView === 'projects' ? C.actionBlue : C.outline} />
-          <Text style={[styles.toggleText, { color: activeView === 'projects' ? C.actionBlue : C.outline }, activeView === 'projects' && styles.toggleTextBold]}>{t.jobs_employers}</Text>
+          <Ionicons name="briefcase-outline" size={15} color={activeView === 'projects' ? '#fff' : C.actionBlue} />
+          <Text style={[styles.toggleText, { color: activeView === 'projects' ? '#fff' : C.actionBlue }, activeView === 'projects' && styles.toggleTextBold]}>{t.jobs_employers}</Text>
         </TouchableOpacity>
       </View>
 
@@ -182,21 +183,21 @@ export default function AktivitaetScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.containerPadding, paddingVertical: Spacing.sm },
-  headerTitle: { fontFamily: 'Inter_700Bold', fontSize: 20 },
+  headerTitle: { fontFamily: 'Outfit_700Bold', fontSize: 20 },
   avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontFamily: 'Inter_600SemiBold', fontSize: 12 },
-  toggleRow: { flexDirection: 'row', marginHorizontal: Spacing.containerPadding, marginBottom: Spacing.sm, borderRadius: Radius.lg, padding: 3 },
-  toggleBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: Spacing.xs + 2, borderRadius: Radius.md },
-  toggleBtnActive: { ...Shadow.level1 },
-  toggleTextBold: { fontFamily: 'Inter_600SemiBold' },
-  toggleText: { fontFamily: 'Inter_500Medium', fontSize: 11 },
+  avatarText: { fontFamily: 'Outfit_600SemiBold', fontSize: 12 },
+  toggleRow: { flexDirection: 'row', marginHorizontal: Spacing.containerPadding, marginBottom: Spacing.sm, borderRadius: Radius.md, borderWidth: 1.5, overflow: 'hidden' },
+  toggleBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, paddingVertical: Spacing.xs + 2 },
+  toggleBtnActive: {},
+  toggleTextBold: { fontFamily: 'Outfit_600SemiBold' },
+  toggleText: { fontFamily: 'Outfit_500Medium', fontSize: 11 },
   summaryBar: { flexDirection: 'row', marginHorizontal: Spacing.containerPadding, marginBottom: Spacing.sm, borderRadius: Radius.xl, borderWidth: 1, ...Shadow.level1, overflow: 'hidden' },
   summaryItem: { flex: 1, padding: Spacing.md, alignItems: 'center' },
   summaryDivider: { width: 1, marginVertical: Spacing.sm },
-  summaryLabel: { fontFamily: 'Inter_400Regular', fontSize: 12, marginBottom: 4 },
-  summaryValue: { fontFamily: 'Inter_700Bold', fontSize: 18 },
-  sectionHeader: { fontFamily: 'Inter_600SemiBold', fontSize: 15, marginTop: Spacing.sm, marginBottom: Spacing.xs },
+  summaryLabel: { fontFamily: 'Outfit_400Regular', fontSize: 12, marginBottom: 4 },
+  summaryValue: { fontFamily: 'Outfit_700Bold', fontSize: 18 },
+  sectionHeader: { fontFamily: 'Outfit_600SemiBold', fontSize: 15, marginTop: Spacing.sm, marginBottom: Spacing.xs },
   listContent: { paddingHorizontal: Spacing.containerPadding },
   searchBar: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, marginHorizontal: Spacing.containerPadding, marginBottom: Spacing.sm, borderRadius: Radius.lg, borderWidth: 1, paddingHorizontal: Spacing.sm, paddingVertical: 7 },
-  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 14 },
+  searchInput: { flex: 1, fontFamily: 'Outfit_400Regular', fontSize: 14 },
 });

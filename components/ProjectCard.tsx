@@ -35,8 +35,8 @@ export default function ProjectCard({ project, totalHours, isActive = false, onE
             <Text style={[styles.hoursValue, { color: C.onSurface }]}>{formatDurationHHMM(totalHours)}</Text>
           </View>
           <View style={[styles.badge, project.billable
-            ? { backgroundColor: C.secondaryFixed }
-            : { backgroundColor: C.surfaceContainerHighest }]}>
+            ? { backgroundColor: C.surface, borderColor: C.actionBlue }
+            : { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
             <Ionicons name="cash-outline" size={13} color={project.billable ? C.actionBlue : C.outline} />
             <Text style={[styles.badgeText, { color: project.billable ? C.actionBlue : C.outline }]}>
               {project.billable ? t.billable_badge : t.not_billable_badge}
@@ -53,12 +53,12 @@ const styles = StyleSheet.create({
   leftBorder: { width: 4 },
   content: { flex: 1, padding: Spacing.md },
   topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.xs },
-  clientLabel: { fontFamily: 'Inter_600SemiBold', fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase' },
-  projectName: { fontFamily: 'Inter_700Bold', fontSize: 18, lineHeight: 24, marginBottom: Spacing.sm },
+  clientLabel: { fontFamily: 'Outfit_600SemiBold', fontSize: 11, letterSpacing: 0.5, textTransform: 'uppercase' },
+  projectName: { fontFamily: 'Outfit_700Bold', fontSize: 18, lineHeight: 24, marginBottom: Spacing.sm },
   divider: { height: 1, marginBottom: Spacing.sm },
   bottomRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  hoursLabel: { fontFamily: 'Inter_400Regular', fontSize: 12, marginBottom: 2 },
-  hoursValue: { fontFamily: 'Inter_500Medium', fontSize: 15 },
-  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: Spacing.sm, paddingVertical: 6, borderRadius: Radius.lg },
-  badgeText: { fontFamily: 'Inter_500Medium', fontSize: 12 },
+  hoursLabel: { fontFamily: 'Outfit_400Regular', fontSize: 12, marginBottom: 2 },
+  hoursValue: { fontFamily: 'Outfit_500Medium', fontSize: 15 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: Spacing.sm, paddingVertical: 6, borderRadius: Radius.lg, borderWidth: 1 },
+  badgeText: { fontFamily: 'Outfit_500Medium', fontSize: 12 },
 });

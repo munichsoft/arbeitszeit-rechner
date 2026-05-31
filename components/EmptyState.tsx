@@ -16,7 +16,7 @@ export default function EmptyState({ iconName, title, hint, ctaLabel, onCta }: E
   const C = useThemeColors();
   return (
     <View style={styles.container}>
-      <View style={[styles.iconWrapper, { backgroundColor: C.secondaryFixed }]}>
+      <View style={[styles.iconWrapper, { backgroundColor: C.surface, borderWidth: 1.5, borderColor: C.cardBorder }]}>
         <Ionicons name={iconName} size={48} color={C.actionBlue} />
       </View>
       <Text style={[styles.title, { color: C.onSurface }]}>{title}</Text>
@@ -33,8 +33,8 @@ export default function EmptyState({ iconName, title, hint, ctaLabel, onCta }: E
 const styles = StyleSheet.create({
   container: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: Spacing.xl, paddingVertical: Spacing.xl },
   iconWrapper: { width: 96, height: 96, borderRadius: 48, alignItems: 'center', justifyContent: 'center', marginBottom: Spacing.lg },
-  title: { fontFamily: 'Inter_700Bold', fontSize: 20, textAlign: 'center', marginBottom: Spacing.sm },
-  hint: { fontFamily: 'Inter_400Regular', fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: Spacing.lg },
+  title: { fontFamily: 'Outfit_700Bold', fontSize: 20, textAlign: 'center', marginBottom: Spacing.sm },
+  hint: { fontFamily: 'Outfit_400Regular', fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: Spacing.lg },
   cta: { borderRadius: Radius.lg, paddingHorizontal: Spacing.lg, paddingVertical: Spacing.sm + 2 },
-  ctaText: { fontFamily: 'Inter_600SemiBold', fontSize: 15, color: '#fff' },
+  ctaText: { fontFamily: 'Outfit_600SemiBold', fontSize: 15, color: '#fff' },
 });

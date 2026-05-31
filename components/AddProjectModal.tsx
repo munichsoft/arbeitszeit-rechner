@@ -102,7 +102,7 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.typeRow}>
                 {JOB_TYPES.map((jt, idx) => (
                   <TouchableOpacity key={idx}
-                    style={[styles.typeChip, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }, idx === selectedType && { borderColor: C.actionBlue, backgroundColor: C.secondaryFixed }]}
+                    style={[styles.typeChip, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }, idx === selectedType && { borderColor: C.actionBlue, backgroundColor: C.surface }]}
                     onPress={() => setSelectedType(idx)}>
                     <Text style={styles.typeEmoji}>{jt.emoji}</Text>
                     <Text style={[styles.typeLabel, { color: idx === selectedType ? C.actionBlue : C.onSurfaceVariant }, idx === selectedType && styles.typeLabelActive]} numberOfLines={1}>
@@ -180,25 +180,25 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   deleteIconBtn: { padding: 4 },
-  title: { fontFamily: 'Inter_600SemiBold', fontSize: 22 },
+  title: { fontFamily: 'Outfit_600SemiBold', fontSize: 22 },
   scroll: { flex: 1, padding: Spacing.md },
   formCard: { borderRadius: Radius.xl, padding: Spacing.md, gap: Spacing.md, borderWidth: 1 },
   field: { gap: 4 },
-  label: { fontFamily: 'Inter_500Medium', fontSize: 13 },
-  input: { borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.sm + 4, fontFamily: 'Inter_400Regular', fontSize: 15, minHeight: 52 },
+  label: { fontFamily: 'Outfit_500Medium', fontSize: 13 },
+  input: { borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.sm + 4, fontFamily: 'Outfit_400Regular', fontSize: 15, minHeight: 52 },
   typeRow: { gap: Spacing.xs, paddingVertical: 4 },
   typeChip: { alignItems: 'center', paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs, borderRadius: Radius.lg, borderWidth: 1.5, minWidth: 72 },
   typeEmoji: { fontSize: 22, marginBottom: 2 },
-  typeLabel: { fontFamily: 'Inter_400Regular', fontSize: 11, textAlign: 'center' },
-  typeLabelActive: { fontFamily: 'Inter_500Medium' },
+  typeLabel: { fontFamily: 'Outfit_400Regular', fontSize: 11, textAlign: 'center' },
+  typeLabelActive: { fontFamily: 'Outfit_500Medium' },
   colorRow: { flexDirection: 'row', gap: Spacing.sm },
   colorSwatch: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
   toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderRadius: Radius.lg, padding: Spacing.sm, minHeight: 64 },
-  toggleLabel: { fontFamily: 'Inter_500Medium', fontSize: 15 },
-  toggleSub: { fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
+  toggleLabel: { fontFamily: 'Outfit_500Medium', fontSize: 15 },
+  toggleSub: { fontFamily: 'Outfit_400Regular', fontSize: 12, marginTop: 2 },
   actions: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm, paddingBottom: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth },
   cancelBtn: { flex: 1, borderWidth: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },
-  cancelText: { fontFamily: 'Inter_500Medium', fontSize: 14 },
+  cancelText: { fontFamily: 'Outfit_500Medium', fontSize: 14 },
   saveBtn: { flex: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },
-  saveText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#fff' },
+  saveText: { fontFamily: 'Outfit_600SemiBold', fontSize: 14, color: '#fff' },
 });

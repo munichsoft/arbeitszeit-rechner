@@ -66,16 +66,16 @@ export default function DashboardScreen() {
   const isDark = C.background === '#0F1117';
 
   // Undertime (negative) palette
-  const negColor  = isDark ? '#FF6B6B' : '#E11D48';
-  const negBg     = isDark ? 'rgba(255,107,107,0.12)' : '#FFF1F2';
-  const negBorder = isDark ? 'rgba(255,107,107,0.30)' : '#FECDD3';
-  const negIconBg = isDark ? 'rgba(255,107,107,0.18)' : '#FFE4E6';
+  const negColor  = isDark ? '#F87171' : '#E05252'; // Softer, natural red
+  const negBg     = isDark ? 'rgba(248,113,113,0.12)' : C.surface;
+  const negBorder = isDark ? 'rgba(248,113,113,0.30)' : '#FECACA'; // Very soft red border
+  const negIconBg = isDark ? 'rgba(248,113,113,0.18)' : '#FEE2E2';
 
   // Overtime (positive) palette
-  const posColor  = isDark ? '#34C77A' : '#16A34A';
-  const posBg     = isDark ? 'rgba(52,199,122,0.12)' : '#F0FDF4';
-  const posBorder = isDark ? 'rgba(52,199,122,0.30)' : '#BBF7D0';
-  const posIconBg = isDark ? 'rgba(52,199,122,0.18)' : '#DCFCE7';
+  const posColor  = isDark ? '#34D399' : '#059669'; // Slightly deeper, more readable green
+  const posBg     = isDark ? 'rgba(52,211,153,0.12)' : C.surface;
+  const posBorder = isDark ? 'rgba(52,211,153,0.30)' : '#A7F3D0'; // Very soft green border
+  const posIconBg = isDark ? 'rgba(52,211,153,0.18)' : '#D1FAE5';
 
   const otColor   = isPositive ? posColor  : negColor;
   const otBg      = isPositive ? posBg     : negBg;
@@ -216,32 +216,32 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: Spacing.containerPadding, paddingVertical: Spacing.sm },
-  greeting: { fontFamily: 'Inter_400Regular', fontSize: 13 },
-  headerTitle: { fontFamily: 'Inter_700Bold', fontSize: 20 },
+  greeting: { fontFamily: 'Outfit_400Regular', fontSize: 13 },
+  headerTitle: { fontFamily: 'Outfit_700Bold', fontSize: 20 },
   avatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontFamily: 'Inter_600SemiBold', fontSize: 14 },
+  avatarText: { fontFamily: 'Outfit_600SemiBold', fontSize: 14 },
   scroll: { flex: 1 },
   scrollContent: { padding: Spacing.containerPadding, gap: Spacing.sm },
   warningBanner: { flexDirection: 'row', alignItems: 'flex-start', gap: Spacing.xs, borderRadius: Radius.lg, padding: Spacing.sm, borderWidth: 1 },
-  warningText: { fontFamily: 'Inter_500Medium', fontSize: 13, flex: 1, lineHeight: 18 },
+  warningText: { fontFamily: 'Outfit_500Medium', fontSize: 13, flex: 1, lineHeight: 18 },
   statRow: { flexDirection: 'row', gap: Spacing.sm },
   statCard: { flex: 1, borderRadius: Radius.xl, padding: Spacing.md, borderWidth: 1, ...Shadow.level1, gap: 4 },
-  statLabel: { fontFamily: 'Inter_400Regular', fontSize: 12 },
-  statValue: { fontFamily: 'Inter_700Bold', fontSize: 18 },
+  statLabel: { fontFamily: 'Outfit_400Regular', fontSize: 12 },
+  statValue: { fontFamily: 'Outfit_700Bold', fontSize: 18 },
 
   // Überstunden tile
   overtimeTile: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderRadius: Radius.xl, borderWidth: 1.5, padding: Spacing.md, ...Shadow.level1 },
   overtimeLeft: { flexDirection: 'row', alignItems: 'center', gap: Spacing.sm },
   overtimeIconBg: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   overtimeLabelCol: { gap: 2 },
-  overtimeTitle: { fontFamily: 'Inter_700Bold', fontSize: 15 },
+  overtimeTitle: { fontFamily: 'Outfit_700Bold', fontSize: 15 },
   overtimePeriodRow: { flexDirection: 'row', alignItems: 'center', gap: 2 },
-  overtimePeriod: { fontFamily: 'Inter_400Regular', fontSize: 12 },
+  overtimePeriod: { fontFamily: 'Outfit_400Regular', fontSize: 12 },
   overtimeRight: { alignItems: 'flex-end', gap: 2 },
-  overtimeValue: { fontFamily: 'Inter_700Bold', fontSize: 26 },
-  overtimeHint: { fontFamily: 'Inter_400Regular', fontSize: 11 },
+  overtimeValue: { fontFamily: 'Outfit_700Bold', fontSize: 26 },
+  overtimeHint: { fontFamily: 'Outfit_400Regular', fontSize: 11 },
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.xs },
-  sectionTitle: { fontFamily: 'Inter_700Bold', fontSize: 18 },
-  sectionLink: { fontFamily: 'Inter_500Medium', fontSize: 14 },
+  sectionTitle: { fontFamily: 'Outfit_700Bold', fontSize: 18 },
+  sectionLink: { fontFamily: 'Outfit_500Medium', fontSize: 14 },
 });
