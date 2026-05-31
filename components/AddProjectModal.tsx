@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, Modal, TouchableOpacity,
   TextInput, ScrollView, Switch, KeyboardAvoidingView, Platform, Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Spacing, Radius } from '../constants/spacing';
 import { useTimeStore, type Project } from '../store/useTimeStore';
@@ -76,8 +77,9 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
 
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
-      <KeyboardAvoidingView style={[styles.container, { backgroundColor: C.background }]} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={styles.header}>
+      <SafeAreaView style={[styles.container, { backgroundColor: C.background }]}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+          <View style={styles.header}>
           <Text style={[styles.title, { color: C.onSurface }]}>{project ? t.edit_job : t.new_job}</Text>
           <View style={styles.headerActions}>
             {project && (
@@ -159,22 +161,23 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
           </View>
         </ScrollView>
 
-        <View style={[styles.actions, { backgroundColor: C.background }]}>
+          <View style={[styles.actions, { backgroundColor: C.background, borderTopColor: C.cardBorder }]}>
           <TouchableOpacity style={[styles.cancelBtn, { borderColor: C.cardBorder }]} onPress={onClose}>
             <Text style={[styles.cancelText, { color: C.onSurface }]}>{t.cancel}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.saveBtn, { backgroundColor: C.actionBlue }]} onPress={handleSave}>
             <Text style={styles.saveText}>{project ? t.save_entry : t.add_job}</Text>
           </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
+          </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: Spacing.md, paddingTop: Spacing.lg },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   deleteIconBtn: { padding: 4 },
   title: { fontFamily: 'Inter_600SemiBold', fontSize: 22 },
@@ -193,7 +196,7 @@ const styles = StyleSheet.create({
   toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderRadius: Radius.lg, padding: Spacing.sm, minHeight: 64 },
   toggleLabel: { fontFamily: 'Inter_500Medium', fontSize: 15 },
   toggleSub: { fontFamily: 'Inter_400Regular', fontSize: 12, marginTop: 2 },
-  actions: { flexDirection: 'row', gap: Spacing.sm, padding: Spacing.md, paddingBottom: Spacing.lg },
+  actions: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm, paddingBottom: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth },
   cancelBtn: { flex: 1, borderWidth: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },
   cancelText: { fontFamily: 'Inter_500Medium', fontSize: 14 },
   saveBtn: { flex: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },

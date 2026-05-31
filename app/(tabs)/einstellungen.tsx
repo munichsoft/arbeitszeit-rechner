@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, TextInput, Alert, Platform,
+  View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, TextInput, Alert, Platform, KeyboardAvoidingView,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -142,6 +142,7 @@ export default function EinstellungenScreen() {
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: C.background }]} edges={['top']}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.header}>
         <Text style={[styles.headerTitle, { color: C.onSurface }]}>Arbeitszeit Rechner</Text>
         <View style={[styles.avatar, { backgroundColor: C.primaryContainer }]}>
@@ -149,13 +150,15 @@ export default function EinstellungenScreen() {
         </View>
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
 
                 {/* ── Profile Card ──────────────────────────── */}
         <View style={[styles.profileCard, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
-          <View style={[styles.profileAvatar, { backgroundColor: C.primaryContainer }]}>
-            <Text style={[styles.profileAvatarText, { color: C.onPrimaryContainer }]}>{displayInitials}</Text>
-          </View>
+          {!editingProfile && (
+            <View style={[styles.profileAvatar, { backgroundColor: C.primaryContainer }]}>
+              <Text style={[styles.profileAvatarText, { color: C.onPrimaryContainer }]}>{displayInitials}</Text>
+            </View>
+          )}
 
           {editingProfile ? (
                         /* Edit mode */
@@ -338,6 +341,7 @@ export default function EinstellungenScreen() {
 
         <View style={{ height: 100 }} />
       </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -365,10 +369,10 @@ const styles = StyleSheet.create({
   profileInputRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.sm, paddingVertical: 10 },
   profileInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15 },
   profileEditActions: { flexDirection: 'row', gap: Spacing.xs, marginTop: 4 },
-  profileCancelBtn: { flex: 1, borderWidth: 1, borderRadius: Radius.md, padding: Spacing.xs + 2, alignItems: 'center' },
-  profileCancelText: { fontFamily: 'Inter_500Medium', fontSize: 13 },
-  profileSaveBtn: { flex: 2, borderRadius: Radius.md, padding: Spacing.xs + 2, alignItems: 'center' },
-  profileSaveText: { fontFamily: 'Inter_600SemiBold', fontSize: 13, color: '#fff' },
+  profileCancelBtn: { flex: 1, borderWidth: 1, borderRadius: Radius.md, paddingVertical: Spacing.sm, paddingHorizontal: Spacing.xs, alignItems: 'center', justifyContent: 'center', minHeight: 40 },
+  profileCancelText: { fontFamily: 'Inter_500Medium', fontSize: 14 },
+  profileSaveBtn: { flex: 2, borderRadius: Radius.md, paddingVertical: Spacing.sm, paddingHorizontal: Spacing.xs, alignItems: 'center', justifyContent: 'center', minHeight: 40 },
+  profileSaveText: { fontFamily: 'Inter_600SemiBold', fontSize: 14, color: '#fff' },
 
     // Section
   section: { gap: 6 },

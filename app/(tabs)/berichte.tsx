@@ -141,9 +141,7 @@ export default function BerichteScreen() {
 
         {activeTab === 'create' ? (
           <>
-            <Text style={styles.subtitle}>{t.report_subtitle}</Text>
-
-                                    {/* Quick Range */}
+            {/* Quick Range */}
             <View style={[styles.card, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
               <Text style={[styles.cardLabel, { color: C.onSurface }]}>{t.period}</Text>
               <View style={styles.chipRow}>
@@ -265,7 +263,6 @@ export default function BerichteScreen() {
         ) : (
           <>
             {/* Stats tab */}
-            <Text style={styles.subtitle}>{t.performance_subtitle}</Text>
 
                         <View style={styles.statRow}>
               <View style={[styles.statCard, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>

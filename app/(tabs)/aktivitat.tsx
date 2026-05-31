@@ -197,6 +197,6 @@ const styles = StyleSheet.create({
   summaryValue: { fontFamily: 'Inter_700Bold', fontSize: 18 },
   sectionHeader: { fontFamily: 'Inter_600SemiBold', fontSize: 15, marginTop: Spacing.sm, marginBottom: Spacing.xs },
   listContent: { paddingHorizontal: Spacing.containerPadding },
-  searchBar: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, marginHorizontal: Spacing.containerPadding, marginBottom: Spacing.sm, borderRadius: Radius.lg, borderWidth: 1, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.sm },
-  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 15 },
+  searchBar: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, marginHorizontal: Spacing.containerPadding, marginBottom: Spacing.sm, borderRadius: Radius.lg, borderWidth: 1, paddingHorizontal: Spacing.sm, paddingVertical: 7 },
+  searchInput: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 14 },
 });

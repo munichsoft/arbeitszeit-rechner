@@ -62,10 +62,25 @@ export default function DashboardScreen() {
   const otLabel = overtimeMode === 'week' ? t.overtime_this_week : overtimeMode === 'month' ? t.overtime_this_month : t.overtime_this_year;
   const isPositive = activeOT >= 0;
 
-  // Green for surplus, rose-red for undertime
-  const otBg     = isPositive ? '#00C48C18' : '#FF445518';
-  const otBorder = isPositive ? '#00C48C55' : '#FF445555';
-  const otColor  = isPositive ? '#00A876'   : '#FF4455';
+  // Theme-aware overtime colors — explicit palettes per mode
+  const isDark = C.background === '#0F1117';
+
+  // Undertime (negative) palette
+  const negColor  = isDark ? '#FF6B6B' : '#E11D48';
+  const negBg     = isDark ? 'rgba(255,107,107,0.12)' : '#FFF1F2';
+  const negBorder = isDark ? 'rgba(255,107,107,0.30)' : '#FECDD3';
+  const negIconBg = isDark ? 'rgba(255,107,107,0.18)' : '#FFE4E6';
+
+  // Overtime (positive) palette
+  const posColor  = isDark ? '#34C77A' : '#16A34A';
+  const posBg     = isDark ? 'rgba(52,199,122,0.12)' : '#F0FDF4';
+  const posBorder = isDark ? 'rgba(52,199,122,0.30)' : '#BBF7D0';
+  const posIconBg = isDark ? 'rgba(52,199,122,0.18)' : '#DCFCE7';
+
+  const otColor   = isPositive ? posColor  : negColor;
+  const otBg      = isPositive ? posBg     : negBg;
+  const otBorder  = isPositive ? posBorder : negBorder;
+  const otIconBg  = isPositive ? posIconBg : negIconBg;
   const otIconName: keyof typeof Ionicons.glyphMap = isPositive ? 'trending-up-outline' : 'trending-down-outline';
 
   const cycleMode = () => {
@@ -142,7 +157,7 @@ export default function DashboardScreen() {
         >
           {/* Left: icon + labels */}
           <View style={styles.overtimeLeft}>
-            <View style={[styles.overtimeIconBg, { backgroundColor: otColor + '22' }]}>
+            <View style={[styles.overtimeIconBg, { backgroundColor: otIconBg }]}>
               <Ionicons name={otIconName} size={22} color={otColor} />
             </View>
             <View style={styles.overtimeLabelCol}>
