@@ -20,6 +20,7 @@ interface SettingsState {
   weeklyEmailSummary: boolean;
   showEarnings: boolean;
   jobStartDate: string | null; // ISO date string, used as floor for cumulative overtime
+  workingDays: number[]; // 1=Mon, 2=Tue, ..., 7=Sun
 
   setLanguage: (lang: Language) => void;
   setTheme: (theme: Theme) => void;
@@ -33,6 +34,7 @@ interface SettingsState {
   setWeeklyEmailSummary: (enabled: boolean) => void;
   setShowEarnings: (enabled: boolean) => void;
   setJobStartDate: (date: string | null) => void;
+  setWorkingDays: (days: number[]) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -50,6 +52,7 @@ export const useSettingsStore = create<SettingsState>()(
       weeklyEmailSummary: false,
       showEarnings: false,
       jobStartDate: null,
+      workingDays: [1, 2, 3, 4, 5],
 
       setLanguage: (lang) => set({ language: lang }),
       setTheme: (theme) => set({ theme }),
@@ -63,6 +66,7 @@ export const useSettingsStore = create<SettingsState>()(
       setWeeklyEmailSummary: (enabled) => set({ weeklyEmailSummary: enabled }),
       setShowEarnings: (enabled) => set({ showEarnings: enabled }),
       setJobStartDate: (date) => set({ jobStartDate: date }),
+      setWorkingDays: (days) => set({ workingDays: days }),
     }),
     {
       name: 'settings-store-v3',

@@ -69,9 +69,9 @@ export default function EinstellungenScreen() {
     language, setLanguage,
     theme, setTheme,
     userName, userEmail, hourlyRate, currencySymbol, weeklyTargetHours,
-    timeFormat, pushNotifications, showEarnings, jobStartDate,
+    timeFormat, pushNotifications, showEarnings, jobStartDate, workingDays,
     setUserName, setUserEmail,
-    setHourlyRate, setCurrencySymbol, setWeeklyTargetHours, setTimeFormat, setPushNotifications, setShowEarnings, setJobStartDate,
+    setHourlyRate, setCurrencySymbol, setWeeklyTargetHours, setTimeFormat, setPushNotifications, setShowEarnings, setJobStartDate, setWorkingDays,
   } = useSettingsStore();
 
   const { entries, projects } = useTimeStore();
@@ -274,10 +274,30 @@ export default function EinstellungenScreen() {
               <Text style={[styles.rowValue, { color: C.onSurfaceVariant }]}>h / {language === 'de' ? 'Woche' : 'week'}</Text>
             </View>
           ) : (
-            <SettingsRow icon="timer-outline" label={t.weekly_target}
+            <SettingsRow icon="timer-outline" label={language === 'de' ? 'Standard-Wochenziel' : 'Default Weekly Target'}
               value={`${weeklyTargetHours}h`} onPress={() => { setHoursInput(String(weeklyTargetHours)); setEditingHours(true); }} />
           )}
           <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+          
+          <View style={styles.workingDaysRow}>
+            <Text style={[styles.workingDaysLabel, { color: C.onSurfaceVariant }]}>{language === 'de' ? 'Standard-Arbeitstage' : 'Default Working Days'}</Text>
+            <View style={styles.daysContainer}>
+              {[1, 2, 3, 4, 5, 6, 7].map(d => {
+                const isActive = workingDays.includes(d);
+                const dayLabel = language === 'de' ? ['M','D','M','D','F','S','S'][d-1] : ['M','T','W','T','F','S','S'][d-1];
+                return (
+                  <TouchableOpacity key={d} style={[styles.dayCircle, { backgroundColor: isActive ? C.actionBlue : C.surfaceContainerLow }]} onPress={() => {
+                    if (isActive && workingDays.length > 1) setWorkingDays(workingDays.filter(day => day !== d));
+                    else if (!isActive) setWorkingDays([...workingDays, d].sort());
+                  }}>
+                    <Text style={[styles.dayText, { color: isActive ? '#fff' : C.onSurface }]}>{dayLabel}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+          <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+
           <SettingsRow icon="swap-horizontal-outline" label={t.currency_symbol}
             value={currencySymbol} onPress={cycleCurrency} />
           <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
@@ -329,6 +349,8 @@ export default function EinstellungenScreen() {
         {/* ── Data & Backup ─────────────────────────── */}
         <Section title={t.data_backup}>
           <SettingsRow icon="download-outline" label={t.export_csv} onPress={handleExportCSV} />
+          <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+          <SettingsRow icon="flask-outline" label="Inject Sample Data" sublabel="Physio, last 2 months (20h/w)" onPress={() => { useTimeStore.getState().injectSampleData(); Alert.alert('Success', 'Injected sample data!'); }} />
         </Section>
 
                 {/* ── ArbZG Info ────────────────────────────── */}
@@ -422,6 +444,11 @@ const styles = StyleSheet.create({
   iosPickerWrapper: { borderTopWidth: 1 },
   iosPickerHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: Spacing.sm, paddingVertical: Spacing.xs },
   iosPickerBtn: { fontFamily: 'Outfit_500Medium', fontSize: 15, paddingHorizontal: 4, paddingVertical: 4 },
+  workingDaysRow: { paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
+  workingDaysLabel: { fontFamily: 'Outfit_500Medium', fontSize: 13, marginBottom: Spacing.xs },
+  daysContainer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  dayCircle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  dayText: { fontFamily: 'Outfit_600SemiBold', fontSize: 14 },
 
   // ArbZG
   arbzgInfo: { flexDirection: 'row', gap: Spacing.sm, alignItems: 'flex-start', padding: Spacing.md },

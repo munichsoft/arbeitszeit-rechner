@@ -40,14 +40,19 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
   const [billable, setBillable] = useState(project?.billable ?? true);
   const [selectedColor, setSelectedColor] = useState(project?.color ?? PROJECT_COLORS[0]);
   const [selectedType, setSelectedType] = useState(0);
+  const [targetHours, setTargetHours] = useState(String(project?.weeklyTargetHours ?? ''));
+  const [workingDays, setWorkingDays] = useState<number[]>(project?.workingDays ?? []);
 
   React.useEffect(() => {
     if (project) {
       setName(project.name); setClient(project.client);
       setRate(String(project.hourlyRate)); setBillable(project.billable);
       setSelectedColor(project.color);
+      setTargetHours(String(project.weeklyTargetHours ?? ''));
+      setWorkingDays(project.workingDays ?? []);
     } else {
       setName(''); setClient(''); setRate(''); setBillable(true); setSelectedColor(PROJECT_COLORS[0]);
+      setTargetHours(''); setWorkingDays([]);
     }
   }, [project, visible]);
 
@@ -57,6 +62,8 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
       client: client.trim().toUpperCase(),
       hourlyRate: Number(rate) || 0,
       billable, color: selectedColor,
+      weeklyTargetHours: targetHours ? Number(targetHours) : undefined,
+      workingDays: workingDays.length > 0 ? workingDays : undefined,
     };
     if (project) updateProject(project.id, data);
     else addProject(data);
@@ -134,6 +141,32 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
                 value={rate} onChangeText={setRate} placeholder="z. B. 18,00" placeholderTextColor={C.outline} keyboardType="decimal-pad" />
             </View>
 
+            {/* Target Hours */}
+            <View style={styles.field}>
+              <Text style={[styles.label, { color: C.onSurface }]}>{language === 'de' ? 'Wochenziel in Stunden (Optional)' : 'Weekly Target Hours (Optional)'}</Text>
+              <TextInput style={[styles.input, { color: C.onSurface, borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }]}
+                value={targetHours} onChangeText={setTargetHours} placeholder={language === 'de' ? 'z. B. 20' : 'e.g. 20'} placeholderTextColor={C.outline} keyboardType="decimal-pad" />
+            </View>
+
+            {/* Working Days */}
+            <View style={styles.field}>
+              <Text style={[styles.label, { color: C.onSurface }]}>{language === 'de' ? 'Arbeitstage (Optional)' : 'Working Days (Optional)'}</Text>
+              <View style={styles.daysContainer}>
+                {[1, 2, 3, 4, 5, 6, 7].map(d => {
+                  const isActive = workingDays.includes(d);
+                  const dayLabel = language === 'de' ? ['M','D','M','D','F','S','S'][d-1] : ['M','T','W','T','F','S','S'][d-1];
+                  return (
+                    <TouchableOpacity key={d} style={[styles.dayCircle, { backgroundColor: isActive ? C.actionBlue : C.surfaceContainerLow }]} onPress={() => {
+                      if (isActive) setWorkingDays(workingDays.filter(day => day !== d));
+                      else setWorkingDays([...workingDays, d].sort());
+                    }}>
+                      <Text style={[styles.dayText, { color: isActive ? '#fff' : C.onSurface }]}>{dayLabel}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
             {/* Color */}
             <View style={styles.field}>
               <Text style={[styles.label, { color: C.onSurface }]}>{t.color}</Text>
@@ -201,4 +234,7 @@ const styles = StyleSheet.create({
   cancelText: { fontFamily: 'Outfit_500Medium', fontSize: 14 },
   saveBtn: { flex: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },
   saveText: { fontFamily: 'Outfit_600SemiBold', fontSize: 14, color: '#fff' },
+  daysContainer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  dayCircle: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
+  dayText: { fontFamily: 'Outfit_600SemiBold', fontSize: 14 },
 });

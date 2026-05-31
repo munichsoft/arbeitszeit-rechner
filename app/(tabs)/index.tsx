@@ -33,7 +33,7 @@ export default function DashboardScreen() {
   const router = useRouter();
   const t = useTranslation();
   const C = useThemeColors();
-  const { entries, getWeeklyHours, getMonthlyHours, getTodayHours, getWeeklyOvertime, getCumulativeOvertime } = useTimeStore();
+  const { entries, getWeeklyHours, getMonthlyHours, getTodayHours, getTodayEarnings, getWeeklyOvertime, getCumulativeOvertime } = useTimeStore();
   const { hourlyRate, currencySymbol, weeklyTargetHours, userName, timeFormat, showEarnings, jobStartDate } = useSettingsStore();
 
   const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
@@ -43,7 +43,7 @@ export default function DashboardScreen() {
   const weeklyHours = getWeeklyHours();
   const monthlyHours = getMonthlyHours();
   const todayHours = getTodayHours();
-  const todayEarnings = formatEarnings(todayHours, hourlyRate, currencySymbol);
+  const todayEarnings = `${currencySymbol}${getTodayEarnings(hourlyRate).toFixed(2)}`;
 
   // Overtime calculations
   const weeklyOT = getWeeklyOvertime(weeklyTargetHours);

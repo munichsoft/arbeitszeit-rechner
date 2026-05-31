@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { format } from 'date-fns';
+import { useSettingsStore } from './useSettingsStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,6 +23,8 @@ export interface Project {
   hourlyRate: number; // EUR
   billable: boolean;
   color: string; // hex
+  weeklyTargetHours?: number;
+  workingDays?: number[]; // 1=Mon, ..., 7=Sun
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -30,10 +33,12 @@ interface TimeState {
   entries: TimeEntry[];
   projects: Project[];
   activeEntryId: string | null;
+  activePauseStart: string | null;
 
   // Timer actions
   startTimer: (projectId: string) => void;
   stopTimer: () => void;
+  togglePause: () => void;
 
   // Entry actions
   addEntry: (entry: Omit<TimeEntry, 'id'>) => void;
@@ -53,9 +58,11 @@ interface TimeState {
   getWeeklyHours: () => number;
   getMonthlyHours: () => number;
   getTodayHours: () => number;
+  getTodayEarnings: (globalHourlyRate: number) => number;
   // Overtime: actual - target (negative = undertime)
   getWeeklyOvertime: (targetHours: number) => number;
   getCumulativeOvertime: (targetHours: number, since: Date) => number;
+  injectSampleData: () => void;
 }
 
 
@@ -98,6 +105,7 @@ export const useTimeStore = create<TimeState>()(
       entries: [] as TimeEntry[],
       projects: [] as Project[],
       activeEntryId: null as string | null,
+      activePauseStart: null as string | null,
 
       startTimer: (projectId) => {
         const { activeEntryId, stopTimer } = get();
@@ -112,20 +120,45 @@ export const useTimeStore = create<TimeState>()(
           billable: get().projects.find(p => p.id === projectId)?.billable ?? true,
         };
         set(state => ({
-          entries: [newEntry, ...state.entries],
+          entries: [...state.entries, newEntry],
           activeEntryId: newEntry.id,
+          activePauseStart: null,
         }));
       },
 
       stopTimer: () => {
-        const { activeEntryId } = get();
+        const { activeEntryId, activePauseStart } = get();
         if (!activeEntryId) return;
+
+        let additionalPause = 0;
+        if (activePauseStart) {
+          additionalPause = (Date.now() - new Date(activePauseStart).getTime()) / 60000;
+        }
+
         set(state => ({
           entries: state.entries.map(e =>
-            e.id === activeEntryId ? { ...e, endTime: new Date().toISOString() } : e
+            e.id === activeEntryId ? { ...e, endTime: new Date().toISOString(), pauseMinutes: e.pauseMinutes + additionalPause } : e
           ),
           activeEntryId: null,
+          activePauseStart: null,
         }));
+      },
+
+      togglePause: () => {
+        const { activeEntryId, activePauseStart } = get();
+        if (!activeEntryId) return;
+
+        if (activePauseStart) {
+          const additionalPause = (Date.now() - new Date(activePauseStart).getTime()) / 60000;
+          set(state => ({
+            activePauseStart: null,
+            entries: state.entries.map(e =>
+              e.id === activeEntryId ? { ...e, pauseMinutes: e.pauseMinutes + additionalPause } : e
+            )
+          }));
+        } else {
+          set({ activePauseStart: new Date().toISOString() });
+        }
       },
 
       addEntry: (entry) => {
@@ -199,13 +232,56 @@ export const useTimeStore = create<TimeState>()(
       },
 
       getTodayHours: () => {
+        const today = new Date().toDateString();
         return get().entries
-          .filter(e => isToday(e.startTime))
+          .filter(e => new Date(e.startTime).toDateString() === today)
           .reduce((acc, e) => acc + getDurationHours(e), 0);
       },
 
-      getWeeklyOvertime: (targetHours) => {
-        return get().getWeeklyHours() - targetHours;
+      getTodayEarnings: (globalHourlyRate) => {
+        const today = new Date().toDateString();
+        return get().entries
+          .filter(e => new Date(e.startTime).toDateString() === today)
+          .reduce((acc, e) => {
+            const project = get().projects.find(p => p.id === e.projectId);
+            const rate = project?.hourlyRate ?? globalHourlyRate;
+            return acc + getDurationHours(e) * rate;
+          }, 0);
+      },
+
+      getWeeklyOvertime: (globalTargetHours) => {
+        const { workingDays: globalWorkingDays } = useSettingsStore.getState();
+        const now = new Date();
+        const day = now.getDay();
+        const currentDayIso = day === 0 ? 7 : day;
+        
+        const projects = get().projects;
+        const hasCustomSchedules = projects.some(p => p.weeklyTargetHours !== undefined || p.workingDays !== undefined);
+
+        let totalExpectedTarget = 0;
+
+        if (hasCustomSchedules) {
+          projects.forEach(project => {
+            const target = project.weeklyTargetHours ?? 0;
+            const days = project.workingDays ?? [];
+            if (target > 0 && days.length > 0) {
+              let daysPassed = 0;
+              for (let i = 1; i <= currentDayIso; i++) {
+                if (days.includes(i)) daysPassed++;
+              }
+              totalExpectedTarget += (target / days.length) * daysPassed;
+            }
+          });
+        } else {
+          let daysPassed = 0;
+          for (let i = 1; i <= currentDayIso; i++) {
+            if (globalWorkingDays.includes(i)) daysPassed++;
+          }
+          const totalWorkingDays = Math.max(1, globalWorkingDays.length);
+          totalExpectedTarget = (globalTargetHours / totalWorkingDays) * daysPassed;
+        }
+
+        return get().getWeeklyHours() - totalExpectedTarget;
       },
 
       getCumulativeOvertime: (targetHours, since) => {
@@ -237,6 +313,47 @@ export const useTimeStore = create<TimeState>()(
           cursor.setDate(cursor.getDate() + 7);
         }
         return total;
+      },
+
+      injectSampleData: () => {
+        const projId = uid();
+        const physioProject: Project = {
+          id: projId,
+          name: 'Physio',
+          client: 'Physiozentrum',
+          hourlyRate: 25,
+          billable: true,
+          color: '#10B981',
+        };
+
+        const newEntries: TimeEntry[] = [];
+        const now = new Date();
+        
+        for (let i = 0; i < 60; i++) {
+          const d = new Date(now);
+          d.setDate(now.getDate() - i);
+          if (d.getDay() === 0 || d.getDay() === 6) continue;
+          
+          const start = new Date(d);
+          start.setHours(8, 0, 0, 0);
+          const end = new Date(d);
+          end.setHours(12, 0, 0, 0);
+
+          newEntries.push({
+            id: uid() + '-' + i,
+            projectId: projId,
+            startTime: start.toISOString(),
+            endTime: end.toISOString(),
+            pauseMinutes: 0,
+            notes: 'Sample therapy session',
+            billable: true,
+          });
+        }
+
+        set(state => ({
+          projects: [...state.projects, physioProject],
+          entries: [...state.entries, ...newEntries],
+        }));
       },
     }),
     {
