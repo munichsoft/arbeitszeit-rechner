@@ -10,6 +10,8 @@ import { useTimeStore, type Project } from '../store/useTimeStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useThemeColors } from '../hooks/useThemeColors';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { formatGermanDate } from '../utils/formatTime';
 
 const PROJECT_COLORS = ['#2170E4', '#0058BE', '#1A7A4A', '#B45309', '#BA1A1A', '#75777D'];
 
@@ -42,6 +44,8 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
   const [selectedType, setSelectedType] = useState(0);
   const [targetHours, setTargetHours] = useState(String(project?.weeklyTargetHours ?? ''));
   const [workingDays, setWorkingDays] = useState<number[]>(project?.workingDays ?? []);
+  const [startDate, setStartDate] = useState<string | null>(project?.startDate ?? null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   React.useEffect(() => {
     if (project) {
@@ -50,9 +54,10 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
       setSelectedColor(project.color);
       setTargetHours(String(project.weeklyTargetHours ?? ''));
       setWorkingDays(project.workingDays ?? []);
+      setStartDate(project.startDate ?? null);
     } else {
       setName(''); setClient(''); setRate(''); setBillable(true); setSelectedColor(PROJECT_COLORS[0]);
-      setTargetHours(''); setWorkingDays([]);
+      setTargetHours(''); setWorkingDays([]); setStartDate(null);
     }
   }, [project, visible]);
 
@@ -64,6 +69,7 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
       billable, color: selectedColor,
       weeklyTargetHours: targetHours ? Number(targetHours) : undefined,
       workingDays: workingDays.length > 0 ? workingDays : undefined,
+      startDate: startDate ?? undefined,
     };
     if (project) updateProject(project.id, data);
     else addProject(data);
@@ -180,6 +186,43 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
                 ))}
               </View>
             </View>
+
+            {/* Start Date */}
+            <View style={styles.field}>
+              <Text style={[styles.label, { color: C.onSurface }]}>{language === 'de' ? 'Startdatum (Optional)' : 'Start Date (Optional)'}</Text>
+              <TouchableOpacity
+                style={[styles.input, { color: C.onSurface, borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow, justifyContent: 'center' }]}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text style={{ color: startDate ? C.onSurface : C.outline }}>
+                  {startDate ? formatGermanDate(new Date(startDate)) : (language === 'de' ? 'Auswählen...' : 'Select...')}
+                </Text>
+              </TouchableOpacity>
+              {startDate && (
+                <TouchableOpacity onPress={() => setStartDate(null)} style={{ position: 'absolute', right: 16, top: 40 }}>
+                  <Ionicons name="close-circle" size={20} color={C.outline} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {showDatePicker && (
+              <>
+                <DateTimePicker
+                  value={startDate ? new Date(startDate) : new Date()}
+                  mode="date"
+                  display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                  onChange={(event, date) => {
+                    if (Platform.OS === 'android') setShowDatePicker(false);
+                    if (date) setStartDate(date.toISOString());
+                  }}
+                />
+                {Platform.OS === 'ios' && (
+                  <TouchableOpacity style={{ alignSelf: 'flex-end', marginBottom: Spacing.sm, marginRight: Spacing.md }} onPress={() => setShowDatePicker(false)}>
+                    <Text style={{ color: C.actionBlue, fontFamily: 'Outfit_600SemiBold', fontSize: 16 }}>{language === 'de' ? 'Fertig' : 'Done'}</Text>
+                  </TouchableOpacity>
+                )}
+              </>
+            )}
 
             {/* Billable */}
             <View style={[styles.toggleRow, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }]}>

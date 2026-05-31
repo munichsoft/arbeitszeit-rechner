@@ -10,11 +10,11 @@ export const Spacing = {
 } as const;
 
 export const Radius = {
-  sm: 4,
-  md: 8,
-  lg: 16,   // inputs, buttons (softer)
-  xl: 20,   // cards, modals (softer)
-  xxl: 28,
+  sm: 2,
+  md: 4,
+  lg: 8,    // inputs, buttons (sharp, technical look)
+  xl: 12,   // cards, modals (structured look)
+  xxl: 16,
   full: 9999,
 } as const;
 

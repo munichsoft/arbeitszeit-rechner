@@ -18,8 +18,8 @@ export default function ProjectCard({ project, totalHours, isActive = false, onE
   const t = useTranslation();
   const C = useThemeColors();
   return (
-    <View style={[styles.card, { backgroundColor: C.surface, borderColor: isActive ? C.activeBlue : C.cardBorder }]}>
-      {isActive && <View style={[styles.leftBorder, { backgroundColor: project.color }]} />}
+    <View style={[styles.card, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
+      <View style={[styles.leftBorder, { backgroundColor: project.color }]} />
       <View style={styles.content}>
         <View style={styles.topRow}>
           <Text style={[styles.clientLabel, { color: C.onSurfaceVariant }]}>{project.client || t.employer.toUpperCase()}</Text>

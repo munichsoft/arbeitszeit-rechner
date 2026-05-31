@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { format } from 'date-fns';
+import { format, startOfWeek } from 'date-fns';
 import { useSettingsStore } from './useSettingsStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -25,6 +25,7 @@ export interface Project {
   color: string; // hex
   weeklyTargetHours?: number;
   workingDays?: number[]; // 1=Mon, ..., 7=Sun
+  startDate?: string; // ISO Date String
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
@@ -250,13 +251,13 @@ export const useTimeStore = create<TimeState>()(
       },
 
       getWeeklyOvertime: (globalTargetHours) => {
-        const { workingDays: globalWorkingDays } = useSettingsStore.getState();
+        const { workingDays: globalWorkingDays, jobStartDate: globalStartDate } = useSettingsStore.getState();
         const now = new Date();
-        const day = now.getDay();
-        const currentDayIso = day === 0 ? 7 : day;
+        const currentWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+        const currentDayIso = now.getDay() === 0 ? 7 : now.getDay();
         
         const projects = get().projects;
-        const hasCustomSchedules = projects.some(p => p.weeklyTargetHours !== undefined || p.workingDays !== undefined);
+        const hasCustomSchedules = projects.some(p => p.weeklyTargetHours !== undefined || p.workingDays !== undefined || p.startDate !== undefined);
 
         let totalExpectedTarget = 0;
 
@@ -264,17 +265,22 @@ export const useTimeStore = create<TimeState>()(
           projects.forEach(project => {
             const target = project.weeklyTargetHours ?? 0;
             const days = project.workingDays ?? [];
+            const pStart = project.startDate ? new Date(project.startDate) : (globalStartDate ? new Date(globalStartDate) : new Date(0));
+            
             if (target > 0 && days.length > 0) {
+              const startDayIso = (pStart > currentWeekStart) ? (pStart.getDay() === 0 ? 7 : pStart.getDay()) : 1;
               let daysPassed = 0;
-              for (let i = 1; i <= currentDayIso; i++) {
+              for (let i = startDayIso; i <= currentDayIso; i++) {
                 if (days.includes(i)) daysPassed++;
               }
               totalExpectedTarget += (target / days.length) * daysPassed;
             }
           });
         } else {
+          const gStart = globalStartDate ? new Date(globalStartDate) : new Date(0);
+          const startDayIso = (gStart > currentWeekStart) ? (gStart.getDay() === 0 ? 7 : gStart.getDay()) : 1;
           let daysPassed = 0;
-          for (let i = 1; i <= currentDayIso; i++) {
+          for (let i = startDayIso; i <= currentDayIso; i++) {
             if (globalWorkingDays.includes(i)) daysPassed++;
           }
           const totalWorkingDays = Math.max(1, globalWorkingDays.length);
@@ -284,34 +290,71 @@ export const useTimeStore = create<TimeState>()(
         return get().getWeeklyHours() - totalExpectedTarget;
       },
 
-      getCumulativeOvertime: (targetHours, since) => {
-        // Walk each completed Mon–Sun week from `since` up to (but not including) the current week.
-        // Sum (actual hours that week) - targetHours.
-        const now = new Date();
-        // Start of current week (Monday 00:00)
-        const currentWeekStart = new Date(now);
-        currentWeekStart.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
-        currentWeekStart.setHours(0, 0, 0, 0);
-
-        // Align `since` to the Monday of its week
-        const cursor = new Date(since);
-        cursor.setDate(cursor.getDate() - (cursor.getDay() === 0 ? 6 : cursor.getDay() - 1));
-        cursor.setHours(0, 0, 0, 0);
-
+      getCumulativeOvertime: (globalTargetHours, since) => {
+        const { entries, projects } = get();
+        const { workingDays: globalWorkingDays, jobStartDate: globalStartDate } = useSettingsStore.getState();
+        
         let total = 0;
-        const { entries } = get();
+        const now = new Date();
+        const currentWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+        
+        let cursor = startOfWeek(since, { weekStartsOn: 1 });
+        const hasCustomSchedules = projects.some(p => p.weeklyTargetHours !== undefined || p.workingDays !== undefined || p.startDate !== undefined);
+        
         while (cursor < currentWeekStart) {
-          const weekEnd = new Date(cursor);
-          weekEnd.setDate(cursor.getDate() + 7);
+          const nextCursor = new Date(cursor.getTime() + 7 * 24 * 60 * 60 * 1000);
+          
+          let expectedTarget = 0;
+          
+          if (hasCustomSchedules) {
+             projects.forEach(p => {
+                const target = p.weeklyTargetHours ?? 0;
+                const days = p.workingDays ?? [];
+                const pStart = p.startDate ? new Date(p.startDate) : (globalStartDate ? new Date(globalStartDate) : new Date(0));
+                
+                if (target > 0 && days.length > 0) {
+                   if (pStart >= nextCursor) {
+                      expectedTarget += 0;
+                   } else if (pStart > cursor) {
+                      const startDayIso = pStart.getDay() === 0 ? 7 : pStart.getDay();
+                      let validDays = 0;
+                      for(let i = startDayIso; i <= 7; i++) {
+                         if (days.includes(i)) validDays++;
+                      }
+                      expectedTarget += (target / days.length) * validDays;
+                   } else {
+                      expectedTarget += target;
+                   }
+                }
+             });
+          } else {
+             const gStart = globalStartDate ? new Date(globalStartDate) : new Date(0);
+             if (gStart >= nextCursor) {
+                expectedTarget = 0;
+             } else if (gStart > cursor) {
+                const startDayIso = gStart.getDay() === 0 ? 7 : gStart.getDay();
+                let validDays = 0;
+                for(let i = startDayIso; i <= 7; i++) {
+                   if (globalWorkingDays.includes(i)) validDays++;
+                }
+                const totalWorkingDays = Math.max(1, globalWorkingDays.length);
+                expectedTarget += (globalTargetHours / totalWorkingDays) * validDays;
+             } else {
+                expectedTarget += globalTargetHours;
+             }
+          }
+
           const hoursThisWeek = entries
             .filter(e => {
               const d = new Date(e.startTime);
-              return d >= cursor && d < weekEnd;
+              return d >= cursor && d < nextCursor;
             })
             .reduce((acc, e) => acc + getDurationHours(e), 0);
-          total += hoursThisWeek - targetHours;
-          cursor.setDate(cursor.getDate() + 7);
+            
+          total += hoursThisWeek - expectedTarget;
+          cursor = nextCursor;
         }
+        
         return total;
       },
 

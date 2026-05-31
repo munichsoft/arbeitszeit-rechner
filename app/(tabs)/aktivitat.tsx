@@ -158,7 +158,6 @@ export default function AktivitaetScreen() {
               renderItem={({ item, index }) => (
                 <ProjectCard
                   project={item} totalHours={getTotalHoursForProject(item.id)}
-                  isActive={index === 0}
                   onEdit={() => { setEditProject(item); setProjectModalVisible(true); }}
                 />
               )}
@@ -197,7 +196,7 @@ const styles = StyleSheet.create({
   summaryLabel: { fontFamily: 'Outfit_400Regular', fontSize: 12, marginBottom: 4 },
   summaryValue: { fontFamily: 'Outfit_700Bold', fontSize: 18 },
   sectionHeader: { fontFamily: 'Outfit_600SemiBold', fontSize: 15, marginTop: Spacing.sm, marginBottom: Spacing.xs },
-  listContent: { paddingHorizontal: Spacing.containerPadding },
-  searchBar: { flexDirection: 'row', alignItems: 'center', gap: Spacing.xs, marginHorizontal: Spacing.containerPadding, marginBottom: Spacing.sm, borderRadius: Radius.lg, borderWidth: 1, paddingHorizontal: Spacing.sm, paddingVertical: 7 },
-  searchInput: { flex: 1, fontFamily: 'Outfit_400Regular', fontSize: 14 },
+  listContent: { paddingHorizontal: Spacing.md, paddingBottom: Spacing.xl },
+  searchBar: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.xs, borderRadius: Radius.lg, borderWidth: 1, marginBottom: Spacing.md, marginHorizontal: Spacing.md },
+  searchInput: { flex: 1, fontFamily: 'Outfit_500Medium', fontSize: 16, marginLeft: Spacing.sm },
 });
