@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.arbeitszeitrechner.app"
+      "bundleIdentifier": "com.arbeitszeitrechner.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.arbeitszeitrechner.app",
