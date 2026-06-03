@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { format, getDaysInMonth } from 'date-fns';
@@ -8,6 +8,7 @@ import { getDurationHours } from '../store/useTimeStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useThemeColors } from '../hooks/useThemeColors';
+import TimeEntryCard from './TimeEntryCard';
 import type { TimeEntry, EntryType } from '../store/useTimeStore';
 
 // ─── Type Config ────────────────────────────────────────────────────────────
@@ -48,6 +49,8 @@ export default function MonthCalendarView({ year, month, entries, onDayPress }: 
   const C = useThemeColors();
   const { language, hourlyRate, currencySymbol, showEarnings } = useSettingsStore();
   const locale = language === 'de' ? de : enUS;
+
+  const [expandedDate, setExpandedDate] = useState<string | null>(null);
 
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const today = new Date();
@@ -117,20 +120,31 @@ export default function MonthCalendarView({ year, month, entries, onDayPress }: 
 
           const hasEntry = day.workEntries.length > 0 || !!day.nonWorkEntry;
 
+          const isExpanded = expandedDate === day.dateStr;
+
           return (
-            <TouchableOpacity
+            <View
               key={day.dateStr}
-              onPress={() => onDayPress(day.dateStr, day.nonWorkEntry ?? day.workEntries[0])}
-              activeOpacity={0.72}
               style={[
-                styles.dayRow,
+                styles.dayContainer,
                 {
                   backgroundColor: day.isToday ? C.actionBlue + '14' : C.surface,
                   borderColor: day.isToday ? C.actionBlue + '55' : C.cardBorder,
                 },
               ]}
             >
-              {/* Today accent stripe */}
+              <TouchableOpacity
+                onPress={() => {
+                  if (hasEntry) {
+                    setExpandedDate(isExpanded ? null : day.dateStr);
+                  } else {
+                    onDayPress(day.dateStr);
+                  }
+                }}
+                activeOpacity={0.72}
+                style={styles.dayRow}
+              >
+                {/* Today accent stripe */}
               {day.isToday && <View style={[styles.todayStripe, { backgroundColor: C.actionBlue }]} />}
 
               {/* Left: date + weekday */}
@@ -184,7 +198,45 @@ export default function MonthCalendarView({ year, month, entries, onDayPress }: 
                   </View>
                 </View>
               )}
-            </TouchableOpacity>
+                {hasEntry && (
+                  <Ionicons 
+                    name={isExpanded ? 'chevron-up' : 'chevron-down'} 
+                    size={20} 
+                    color={C.outline} 
+                    style={{ marginLeft: 8 }} 
+                  />
+                )}
+              </TouchableOpacity>
+
+              {/* Expanded Accordion Area */}
+              {isExpanded && (
+                <View style={[styles.expandedArea, { borderTopColor: C.outlineVariant, backgroundColor: C.background }]}>
+                  {day.workEntries.map(entry => (
+                    <TimeEntryCard
+                      key={entry.id}
+                      entry={entry}
+                      compact={true}
+                      onPress={() => onDayPress(day.dateStr, entry)}
+                    />
+                  ))}
+                  {day.nonWorkEntry && (
+                    <TimeEntryCard
+                      key={day.nonWorkEntry.id}
+                      entry={day.nonWorkEntry}
+                      compact={true}
+                      onPress={() => onDayPress(day.dateStr, day.nonWorkEntry)}
+                    />
+                  )}
+                  <TouchableOpacity
+                    style={[styles.inlineAddBtn, { borderColor: C.outlineVariant }]}
+                    onPress={() => onDayPress(day.dateStr)}
+                  >
+                    <Ionicons name="add" size={16} color={C.actionBlue} />
+                    <Text style={[styles.inlineAddText, { color: C.actionBlue }]}>{t.new_entry}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
           );
         })}
         <View style={{ height: 80 }} />
@@ -224,16 +276,38 @@ const styles = StyleSheet.create({
   scroll: { flex: 1 },
   scrollContent: { paddingHorizontal: Spacing.containerPadding, paddingTop: Spacing.xs, gap: Spacing.xs },
 
-  // Day row
+  // Day container (border)
+  dayContainer: {
+    borderRadius: Radius.xl,
+    borderWidth: 1,
+    overflow: 'hidden',
+  },
+  // Day row (clickable header)
   dayRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: Radius.xl,
-    borderWidth: 1,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.sm,
     minHeight: 64,
-    overflow: 'hidden',
+  },
+  expandedArea: {
+    padding: Spacing.sm,
+    borderTopWidth: 1,
+    gap: Spacing.sm,
+  },
+  inlineAddBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: Spacing.sm,
+    borderWidth: 1,
+    borderRadius: Radius.lg,
+    borderStyle: 'dashed',
+    gap: 4,
+  },
+  inlineAddText: {
+    fontFamily: 'Outfit_500Medium',
+    fontSize: 13,
   },
   todayStripe: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 3 },
 

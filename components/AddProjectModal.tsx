@@ -93,21 +93,23 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
       <SafeAreaView style={[styles.container, { backgroundColor: C.background }]}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
           <View style={styles.header}>
-          <Text style={[styles.title, { color: C.onSurface }]}>{project ? t.edit_job : t.new_job}</Text>
-          <View style={styles.headerActions}>
+            <View style={styles.titleContainer}>
+              <Text style={[styles.title, { color: C.onSurface }]}>{project ? t.edit_job : t.new_job}</Text>
+            </View>
+            <View style={styles.headerActions}>
             {project && (
               <TouchableOpacity onPress={handleDelete} hitSlop={16} style={styles.deleteIconBtn}>
                 <Ionicons name="trash-outline" size={22} color={C.error} />
               </TouchableOpacity>
             )}
             <TouchableOpacity onPress={onClose} hitSlop={16}>
-              <Ionicons name="close" size={26} color={C.actionBlue} />
+              <Ionicons name="close" size={26} color={C.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
         </View>
 
         <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-          <View style={[styles.formCard, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
+          <View style={styles.formCard}>
 
             {/* Job type */}
             <View style={styles.field}>
@@ -253,12 +255,13 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
+  header: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, minHeight: 60 },
+  titleContainer: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', zIndex: -1 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   deleteIconBtn: { padding: 4 },
   title: { fontFamily: 'Outfit_600SemiBold', fontSize: 22 },
   scroll: { flex: 1, padding: Spacing.md },
-  formCard: { borderRadius: Radius.xl, padding: Spacing.md, gap: Spacing.md, borderWidth: 1 },
+  formCard: { gap: Spacing.md },
   field: { gap: 4 },
   label: { fontFamily: 'Outfit_500Medium', fontSize: 13 },
   input: { borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.sm + 4, fontFamily: 'Outfit_400Regular', fontSize: 15, minHeight: 52 },
@@ -272,7 +275,7 @@ const styles = StyleSheet.create({
   toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderRadius: Radius.lg, padding: Spacing.sm, minHeight: 64 },
   toggleLabel: { fontFamily: 'Outfit_500Medium', fontSize: 15 },
   toggleSub: { fontFamily: 'Outfit_400Regular', fontSize: 12, marginTop: 2 },
-  actions: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm, paddingBottom: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth },
+  actions: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm, paddingBottom: Spacing.xl, borderTopWidth: StyleSheet.hairlineWidth },
   cancelBtn: { flex: 1, borderWidth: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },
   cancelText: { fontFamily: 'Outfit_500Medium', fontSize: 14 },
   saveBtn: { flex: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },

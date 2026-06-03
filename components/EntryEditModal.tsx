@@ -166,7 +166,7 @@ export default function EntryEditModal({ visible, entry, onClose, defaultDate }:
               </TouchableOpacity>
             )}
             <TouchableOpacity onPress={onClose} hitSlop={16}>
-              <Ionicons name="close" size={28} color="#10B981" />
+              <Ionicons name="close" size={28} color={C.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
         </View>
