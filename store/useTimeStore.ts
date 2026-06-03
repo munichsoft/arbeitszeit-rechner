@@ -6,6 +6,8 @@ import { useSettingsStore } from './useSettingsStore';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type EntryType = 'work' | 'vacation' | 'sick' | 'holiday' | 'school';
+
 export interface TimeEntry {
   id: string;
   projectId: string;
@@ -14,6 +16,7 @@ export interface TimeEntry {
   pauseMinutes: number;
   notes: string;
   billable: boolean;
+  type?: EntryType; // undefined treated as 'work' (backwards-compatible)
 }
 
 export interface Project {
@@ -63,6 +66,9 @@ interface TimeState {
   // Overtime: actual - target (negative = undertime)
   getWeeklyOvertime: (targetHours: number) => number;
   getCumulativeOvertime: (targetHours: number, since: Date) => number;
+  copyEntriesFromDate: (fromDateStr: string, toDateStr: string) => void;
+  getHoursForMonth: (year: number, month: number) => number;
+  getEntriesForMonth: (year: number, month: number) => TimeEntry[];
   injectSampleData: () => void;
 }
 
@@ -73,10 +79,53 @@ function uid(): string {
 }
 
 function getDurationHours(entry: TimeEntry): number {
+  // Non-work entries (vacation/sick/holiday/school) have no worked hours
+  if (entry.type && entry.type !== 'work') return 0;
   const start = new Date(entry.startTime).getTime();
   const end = entry.endTime ? new Date(entry.endTime).getTime() : Date.now();
   const ms = end - start - entry.pauseMinutes * 60000;
   return Math.max(0, ms / 3600000);
+}
+
+// Bonus worked hours for neutral-day entries: each unique day with a
+// non-work entry (vacation/sick/holiday/school) contributes the expected
+// target hours for that day, so users don't get penalised.
+function getNeutralDayBonus(entries: TimeEntry[], projects: Project[], globalTargetHours: number, globalWorkingDays: number[], from: Date, to: Date): number {
+  const days = new Set<string>();
+  for (const e of entries) {
+    if (e.type && e.type !== 'work') {
+      const d = new Date(e.startTime);
+      if (d >= from && d <= to) days.add(format(d, 'yyyy-MM-dd'));
+    }
+  }
+
+  if (days.size === 0) return 0;
+
+  const hasCustomSchedules = projects.some(p => p.weeklyTargetHours !== undefined || p.workingDays !== undefined || p.startDate !== undefined);
+
+  let bonus = 0;
+  for (const dateStr of Array.from(days)) {
+    const d = new Date(dateStr);
+    const isoDay = d.getDay() === 0 ? 7 : d.getDay();
+    
+    if (hasCustomSchedules) {
+      projects.forEach(p => {
+         const target = p.weeklyTargetHours ?? 0;
+         const pDays = p.workingDays ?? [];
+         const pStart = p.startDate ? new Date(p.startDate) : new Date(0);
+         pStart.setHours(0,0,0,0);
+         if (target > 0 && pDays.includes(isoDay) && d >= pStart) {
+            bonus += target / pDays.length;
+         }
+      });
+    } else {
+      if (globalWorkingDays.includes(isoDay)) {
+         const dailyTarget = globalTargetHours / Math.max(1, globalWorkingDays.length);
+         bonus += dailyTarget;
+      }
+    }
+  }
+  return bonus;
 }
 
 function isToday(isoStr: string): boolean {
@@ -181,6 +230,28 @@ export const useTimeStore = create<TimeState>()(
         }));
       },
 
+      copyEntriesFromDate: (fromDateStr, toDateStr) => {
+        const { entries } = get();
+        const from = entries.filter(e => format(new Date(e.startTime), 'yyyy-MM-dd') === fromDateStr);
+        if (from.length === 0) return;
+        const toDate = new Date(toDateStr);
+        const newEntries = from.map(e => {
+          const origStart = new Date(e.startTime);
+          const origEnd = e.endTime ? new Date(e.endTime) : null;
+          const newStart = new Date(toDate);
+          newStart.setHours(origStart.getHours(), origStart.getMinutes(), 0, 0);
+          const newEnd = origEnd ? new Date(toDate) : null;
+          if (newEnd && origEnd) newEnd.setHours(origEnd.getHours(), origEnd.getMinutes(), 0, 0);
+          return {
+            ...e,
+            id: uid(),
+            startTime: newStart.toISOString(),
+            endTime: newEnd ? newEnd.toISOString() : null,
+          };
+        });
+        set(state => ({ entries: [...newEntries, ...state.entries] }));
+      },
+
       addProject: (project) => {
         set(state => ({
           projects: [...state.projects, { ...project, id: uid() }],
@@ -230,6 +301,22 @@ export const useTimeStore = create<TimeState>()(
         return get().entries
           .filter(e => isThisMonth(e.startTime))
           .reduce((acc, e) => acc + getDurationHours(e), 0);
+      },
+
+      getHoursForMonth: (year, month) => {
+        return get().entries
+          .filter(e => {
+            const d = new Date(e.startTime);
+            return d.getFullYear() === year && d.getMonth() === month;
+          })
+          .reduce((acc, e) => acc + getDurationHours(e), 0);
+      },
+
+      getEntriesForMonth: (year, month) => {
+        return get().entries.filter(e => {
+          const d = new Date(e.startTime);
+          return d.getFullYear() === year && d.getMonth() === month;
+        });
       },
 
       getTodayHours: () => {
@@ -287,7 +374,8 @@ export const useTimeStore = create<TimeState>()(
           totalExpectedTarget = (globalTargetHours / totalWorkingDays) * daysPassed;
         }
 
-        return get().getWeeklyHours() - totalExpectedTarget;
+        const neutralBonus = getNeutralDayBonus(get().entries, projects, globalTargetHours, globalWorkingDays, currentWeekStart, now);
+        return get().getWeeklyHours() + neutralBonus - totalExpectedTarget;
       },
 
       getCumulativeOvertime: (globalTargetHours, since) => {
@@ -350,8 +438,9 @@ export const useTimeStore = create<TimeState>()(
               return d >= cursor && d < nextCursor;
             })
             .reduce((acc, e) => acc + getDurationHours(e), 0);
-            
-          total += hoursThisWeek - expectedTarget;
+
+          const neutralBonusWeek = getNeutralDayBonus(entries, projects, globalTargetHours, globalWorkingDays, cursor, nextCursor);
+          total += hoursThisWeek + neutralBonusWeek - expectedTarget;
           cursor = nextCursor;
         }
         

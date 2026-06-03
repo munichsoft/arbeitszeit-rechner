@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { format, startOfWeek, addDays } from 'date-fns';
+import { de, enUS } from 'date-fns/locale';
 import { Spacing, Radius, Shadow } from '../../constants/spacing';
-import { useTimeStore } from '../../store/useTimeStore';
+import { useTimeStore, getDurationHours } from '../../store/useTimeStore';
 import { useSettingsStore } from '../../store/useSettingsStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useThemeColors } from '../../hooks/useThemeColors';
 import TimerDisplay from '../../components/TimerDisplay';
-import WeeklyProgress from '../../components/WeeklyProgress';
 import TimeEntryCard from '../../components/TimeEntryCard';
 import EntryEditModal from '../../components/EntryEditModal';
+import FAB from '../../components/FAB';
 import EmptyState from '../../components/EmptyState';
 import { formatEarnings, formatDuration } from '../../utils/formatTime';
 import { runAllChecks } from '../../utils/germanLaborLaw';
@@ -34,10 +36,12 @@ export default function DashboardScreen() {
   const t = useTranslation();
   const C = useThemeColors();
   const { entries, getWeeklyHours, getMonthlyHours, getTodayHours, getTodayEarnings, getWeeklyOvertime, getCumulativeOvertime } = useTimeStore();
-  const { hourlyRate, currencySymbol, weeklyTargetHours, userName, timeFormat, showEarnings, jobStartDate } = useSettingsStore();
+  const { hourlyRate, currencySymbol, weeklyTargetHours, userName, timeFormat, showEarnings, enableTimer, jobStartDate, language } = useSettingsStore();
+  const locale = language === 'de' ? de : enUS;
 
   const [editEntry, setEditEntry] = useState<TimeEntry | null>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [defaultDate, setDefaultDate] = useState<Date | undefined>(undefined);
   const [overtimeMode, setOvertimeMode] = useState<OvertimeMode>('week');
 
   const weeklyHours = getWeeklyHours();
@@ -100,6 +104,26 @@ export default function DashboardScreen() {
     .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
     .slice(0, 3);
 
+  // Week Strip data
+  const weekDays = useMemo(() => {
+    const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = addDays(weekStart, i);
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const dayEntries = entries.filter(e => format(new Date(e.startTime), 'yyyy-MM-dd') === dateStr);
+      const hours = dayEntries.reduce((acc, e) => acc + getDurationHours(e), 0);
+      const isToday = dateStr === format(new Date(), 'yyyy-MM-dd');
+      const dayLabel = format(date, 'EEEEE', { locale }); // 1-letter day abbrev
+      const dow = date.getDay();
+      const isWeekend = dow === 0 || dow === 6;
+      const nonWorkEntry = dayEntries.find(e => e.type && e.type !== 'work');
+      return { date, dateStr, hours, isToday, dayLabel, isWeekend, dayEntries, nonWorkEntry };
+    });
+  }, [entries, language]);
+
+  const maxHours = Math.max(...weekDays.map(d => d.hours), weeklyTargetHours / 5, 1);
+  const dailyTarget = weeklyTargetHours / 5;
+
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: C.background }]} edges={['top']}>
       {/* Header */}
@@ -127,11 +151,95 @@ export default function DashboardScreen() {
           </View>
         )}
 
-        {/* Timer */}
-        <TimerDisplay />
+        {/* Timer — only shown when enabled in settings */}
+        {enableTimer && <TimerDisplay />}
 
-        {/* Weekly Progress */}
-        <WeeklyProgress currentHours={weeklyHours} targetHours={weeklyTargetHours} />
+        {/* Week Strip */}
+        <View style={[styles.weekStrip, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
+          <Text style={[styles.weekStripTitle, { color: C.onSurface }]}>{t.this_week_strip}</Text>
+          <View style={styles.weekStripRow}>
+            {weekDays.map(day => {
+              const barPct = day.hours > 0 ? Math.min(day.hours / maxHours, 1) : 0;
+              const atTarget = day.hours >= dailyTarget - 0.05;
+              const barColor = day.isToday
+                ? C.actionBlue
+                : atTarget && day.hours > 0
+                  ? '#10B981'
+                  : day.hours > 0
+                    ? C.actionBlue + 'BB'
+                    : C.surfaceContainerHighest;
+              return (
+                <TouchableOpacity
+                  key={day.dateStr}
+                  style={styles.weekDayCol}
+                  onPress={() => { 
+                    if (day.dayEntries.length > 0) {
+                      setEditEntry(day.dayEntries[0]);
+                      setDefaultDate(undefined);
+                    } else {
+                      setEditEntry(null); 
+                      setDefaultDate(day.date);
+                    }
+                    setEditModalVisible(true); 
+                  }}
+                  activeOpacity={0.7}
+                >
+                  {/* Bar */}
+                  <View style={[
+                    styles.barTrack, 
+                    { backgroundColor: day.nonWorkEntry ? '#F59E0B22' : C.surfaceContainerHighest }
+                  ]}>
+                    {day.nonWorkEntry ? (
+                      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <Ionicons 
+                          name={
+                            day.nonWorkEntry.type === 'vacation' ? 'umbrella-outline' :
+                            day.nonWorkEntry.type === 'sick' ? 'thermometer-outline' :
+                            day.nonWorkEntry.type === 'holiday' ? 'sparkles-outline' :
+                            'school-outline'
+                          } 
+                          size={18} 
+                          color={
+                            day.nonWorkEntry.type === 'vacation' ? '#F59E0B' :
+                            day.nonWorkEntry.type === 'sick' ? '#EF4444' :
+                            day.nonWorkEntry.type === 'holiday' ? '#8B5CF6' :
+                            '#3B82F6'
+                          } 
+                        />
+                      </View>
+                    ) : (
+                      <View style={[
+                        styles.barFill,
+                        {
+                          height: `${Math.max(barPct * 100, day.hours > 0 ? 4 : 0)}%`,
+                          backgroundColor: barColor,
+                          borderRadius: barPct > 0.95 ? Radius.sm : Radius.sm,
+                        },
+                      ]} />
+                    )}
+                  </View>
+                  {/* Hours label */}
+                  <Text style={[
+                    styles.barHours,
+                    { color: day.hours > 0 || day.nonWorkEntry ? C.onSurface : C.onSurfaceVariant },
+                  ]}>
+                    {day.nonWorkEntry 
+                      ? t[`type_${day.nonWorkEntry.type}` as keyof typeof t]?.toString().substring(0, 3) 
+                      : day.hours > 0 ? `${Math.floor(day.hours)}h` : ''}
+                  </Text>
+                  {/* Day label */}
+                  <Text style={[
+                    styles.barDay,
+                    {
+                      color: day.isToday ? C.actionBlue : day.isWeekend ? '#EF4444' : C.onSurfaceVariant,
+                      fontFamily: day.isToday ? 'Outfit_700Bold' : 'Outfit_500Medium',
+                    },
+                  ]}>{day.dayLabel}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
         {/* Quick stat row */}
         <View style={styles.statRow}>
@@ -183,9 +291,11 @@ export default function DashboardScreen() {
         {/* Recent Entries */}
         <View style={styles.sectionHeader}>
           <Text style={[styles.sectionTitle, { color: C.onSurface }]}>{t.recent_entries}</Text>
-          <TouchableOpacity onPress={() => router.push('/aktivitat')}>
-            <Text style={[styles.sectionLink, { color: C.actionBlue }]}>{t.view_all}</Text>
-          </TouchableOpacity>
+          <View style={styles.sectionHeaderActions}>
+            <TouchableOpacity onPress={() => router.push('/aktivitat')}>
+              <Text style={[styles.sectionLink, { color: C.actionBlue }]}>{t.view_all}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {recentEntries.length === 0 ? (
@@ -199,7 +309,8 @@ export default function DashboardScreen() {
             <TimeEntryCard
               key={entry.id}
               entry={entry}
-              compact
+              compact={true}
+              showDate={true}
               onPress={() => { setEditEntry(entry); setEditModalVisible(true); }}
             />
           ))
@@ -208,7 +319,8 @@ export default function DashboardScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      <EntryEditModal visible={editModalVisible} entry={editEntry} onClose={() => setEditModalVisible(false)} />
+      <FAB onPress={() => { setEditEntry(null); setDefaultDate(undefined); setEditModalVisible(true); }} />
+      <EntryEditModal visible={editModalVisible} entry={editEntry} defaultDate={defaultDate} onClose={() => setEditModalVisible(false)} />
     </SafeAreaView>
   );
 }
@@ -242,6 +354,18 @@ const styles = StyleSheet.create({
   overtimeHint: { fontFamily: 'Outfit_400Regular', fontSize: 11 },
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: Spacing.xs },
+  sectionHeaderActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   sectionTitle: { fontFamily: 'Outfit_700Bold', fontSize: 18 },
   sectionLink: { fontFamily: 'Outfit_500Medium', fontSize: 14 },
+  addEntryBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+
+  // Week Strip
+  weekStrip: { borderRadius: Radius.xl, borderWidth: 1, padding: Spacing.md, ...Shadow.level1 },
+  weekStripTitle: { fontFamily: 'Outfit_700Bold', fontSize: 16, marginBottom: Spacing.sm },
+  weekStripRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 6 },
+  weekDayCol: { flex: 1, alignItems: 'center', gap: 4 },
+  barTrack: { width: '100%', height: 72, borderRadius: Radius.sm, overflow: 'hidden', justifyContent: 'flex-end' },
+  barFill: { width: '100%', borderRadius: Radius.sm },
+  barHours: { fontFamily: 'Outfit_500Medium', fontSize: 10, minHeight: 14 },
+  barDay: { fontSize: 12 },
 });

@@ -19,6 +19,7 @@ interface SettingsState {
   pushNotifications: boolean;
   weeklyEmailSummary: boolean;
   showEarnings: boolean;
+  enableTimer: boolean; // live shift timer (disabled by default)
   jobStartDate: string | null; // ISO date string, used as floor for cumulative overtime
   workingDays: number[]; // 1=Mon, 2=Tue, ..., 7=Sun
 
@@ -33,6 +34,7 @@ interface SettingsState {
   setPushNotifications: (enabled: boolean) => void;
   setWeeklyEmailSummary: (enabled: boolean) => void;
   setShowEarnings: (enabled: boolean) => void;
+  setEnableTimer: (enabled: boolean) => void;
   setJobStartDate: (date: string | null) => void;
   setWorkingDays: (days: number[]) => void;
 }
@@ -51,6 +53,7 @@ export const useSettingsStore = create<SettingsState>()(
       pushNotifications: true,
       weeklyEmailSummary: false,
       showEarnings: false,
+      enableTimer: false,
       jobStartDate: null,
       workingDays: [1, 2, 3, 4, 5],
 
@@ -65,6 +68,7 @@ export const useSettingsStore = create<SettingsState>()(
       setPushNotifications: (enabled) => set({ pushNotifications: enabled }),
       setWeeklyEmailSummary: (enabled) => set({ weeklyEmailSummary: enabled }),
       setShowEarnings: (enabled) => set({ showEarnings: enabled }),
+      setEnableTimer: (enabled) => set({ enableTimer: enabled }),
       setJobStartDate: (date) => set({ jobStartDate: date }),
       setWorkingDays: (days) => set({ workingDays: days }),
     }),

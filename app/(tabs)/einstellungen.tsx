@@ -12,8 +12,11 @@ import { useTimeStore } from '../../store/useTimeStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useThemeColors } from '../../hooks/useThemeColors';
 import { exportCSV } from '../../utils/exportHelpers';
-import type { Language, } from '../../utils/i18n';
+import ProjectCard from '../../components/ProjectCard';
+import AddProjectModal from '../../components/AddProjectModal';
+import type { Language } from '../../utils/i18n';
 import type { Theme } from '../../store/useSettingsStore';
+import type { Project } from '../../store/useTimeStore';
 
 // ── Reusable settings row ──────────────────────────────────────────────────────
 // ── SettingsRow with dynamic colors ──────────────────────────────────────────
@@ -69,12 +72,16 @@ export default function EinstellungenScreen() {
     language, setLanguage,
     theme, setTheme,
     userName, userEmail, hourlyRate, currencySymbol, weeklyTargetHours,
-    timeFormat, pushNotifications, showEarnings, jobStartDate, workingDays,
+    timeFormat, pushNotifications, showEarnings, enableTimer, jobStartDate, workingDays,
     setUserName, setUserEmail,
-    setHourlyRate, setCurrencySymbol, setWeeklyTargetHours, setTimeFormat, setPushNotifications, setShowEarnings, setJobStartDate, setWorkingDays,
+    setHourlyRate, setCurrencySymbol, setWeeklyTargetHours, setTimeFormat, setPushNotifications, setShowEarnings, setEnableTimer, setJobStartDate, setWorkingDays,
   } = useSettingsStore();
 
-  const { entries, projects } = useTimeStore();
+  const { entries, projects, getTotalHoursForProject } = useTimeStore();
+
+  // Project / job management
+  const [projectModalVisible, setProjectModalVisible] = useState(false);
+  const [editProject, setEditProject] = useState<Project | null>(null);
 
   // Profile editing state
   const [editingProfile, setEditingProfile] = useState(false);
@@ -307,6 +314,9 @@ export default function EinstellungenScreen() {
           <SettingsRow icon="cash-outline" label={t.show_earnings}
             sublabel={t.show_earnings_hint} toggle toggleValue={showEarnings} onToggle={setShowEarnings} />
           <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+          <SettingsRow icon="timer-outline" label={t.enable_timer}
+            sublabel={t.enable_timer_hint} toggle toggleValue={enableTimer} onToggle={setEnableTimer} />
+          <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
           <SettingsRow
             icon="calendar-outline"
             label={t.job_start_date}
@@ -346,6 +356,35 @@ export default function EinstellungenScreen() {
           )}
         </Section>
 
+        {/* ── Jobs & Aufträge ──────────────────────────── */}
+        <Section title={language === 'de' ? 'Jobs & Aufträge' : 'Jobs & Employers'}>
+          <View style={[styles.jobsSectionCard, { backgroundColor: C.surface }]}>
+            {projects.length === 0 ? (
+              <Text style={[styles.jobsEmpty, { color: C.onSurfaceVariant }]}>
+                {language === 'de' ? 'Noch keine Jobs hinterlegt.' : 'No jobs added yet.'}
+              </Text>
+            ) : (
+              projects.map(p => (
+                <ProjectCard
+                  key={p.id}
+                  project={p}
+                  totalHours={getTotalHoursForProject(p.id)}
+                  onEdit={() => { setEditProject(p); setProjectModalVisible(true); }}
+                />
+              ))
+            )}
+            <TouchableOpacity
+              style={[styles.addJobBtn, { borderColor: C.actionBlue }]}
+              onPress={() => { setEditProject(null); setProjectModalVisible(true); }}
+            >
+              <Ionicons name="add" size={18} color={C.actionBlue} />
+              <Text style={[styles.addJobText, { color: C.actionBlue }]}>
+                {language === 'de' ? 'Job hinzufügen' : 'Add job'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Section>
+
         {/* ── Data & Backup ─────────────────────────── */}
         <Section title={t.data_backup}>
           <SettingsRow icon="download-outline" label={t.export_csv} onPress={handleExportCSV} />
@@ -364,6 +403,7 @@ export default function EinstellungenScreen() {
         <View style={{ height: 100 }} />
       </ScrollView>
       </KeyboardAvoidingView>
+      <AddProjectModal visible={projectModalVisible} project={editProject} onClose={() => setProjectModalVisible(false)} />
     </SafeAreaView>
   );
 }
@@ -453,4 +493,10 @@ const styles = StyleSheet.create({
   // ArbZG
   arbzgInfo: { flexDirection: 'row', gap: Spacing.sm, alignItems: 'flex-start', padding: Spacing.md },
   arbzgText: { flex: 1, fontFamily: 'Outfit_400Regular', fontSize: 13, lineHeight: 20 },
+
+  // Jobs section
+  jobsSectionCard: { gap: Spacing.xs, padding: Spacing.xs },
+  jobsEmpty: { fontFamily: 'Outfit_400Regular', fontSize: 14, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.sm },
+  addJobBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1.5, borderStyle: 'dashed', borderRadius: Radius.lg, paddingVertical: Spacing.sm, marginTop: Spacing.xs },
+  addJobText: { fontFamily: 'Outfit_600SemiBold', fontSize: 14 },
 });

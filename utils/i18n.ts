@@ -41,14 +41,23 @@ const de = {
   // ── Entries / Aktivität ──────────────────────────────────────
   my_shifts: 'Meine Schichten',
   jobs_employers: 'Aufträge & Arbeitgeber',
+  month_view: 'Monat',
   this_week: 'Diese Woche',
   earnings: 'Verdienst',
   top_job: 'Top Auftrag',
   add_entry: 'Eintrag hinzufügen',
+  add_entry_dashboard: 'Eintrag hinzufügen',
+  copy_from_yesterday: 'Gestern kopieren',
+  copy_yesterday_done: 'Einträge kopiert!',
   running: 'Läuft',
   now: 'Jetzt',
+  // Month calendar columns
+  pause_col: 'Pause',
+  hours_col: 'Stunden',
+  earnings_col: 'Verdienst',
+  no_entry_today: 'Kein Eintrag',
 
-  // ── Entry Edit Modal ─────────────────────────────────────────
+  // ── Entry Edit Modal ──────────────────────────────────────────────────
   edit_entry: 'Eintrag bearbeiten',
   new_entry: 'Neuer Eintrag',
   date: 'Datum',
@@ -63,6 +72,13 @@ const de = {
   billable_hint: 'In Rechnung stellen',
   cancel: 'Abbrechen',
   save_entry: 'Eintrag speichern',
+  // Entry types
+  entry_type: 'Typ',
+  type_work: 'Arbeit',
+  type_vacation: 'Urlaub',
+  type_sick: 'Krank',
+  type_holiday: 'Feiertag',
+  type_school: 'Schule',
 
   // ── Projects / Aufträge ──────────────────────────────────────
   employer: 'Arbeitgeber',
@@ -103,11 +119,12 @@ const de = {
   total_hours_stat: 'Gesamtstunden',
   estimated_revenue: 'Verdienst',
   daily_average: 'Tages­durchschnitt',
-  overtime: 'Überstunden',
   hours_last_7: 'Stunden (letzte 7 Tage)',
   by_job: 'Nach Auftrag',
   by_category: 'Nach Kategorie',
   categories_count: 'Kategorien',
+  monthly_breakdown: 'Monatsübersicht',
+  no_hours_this_month: 'Keine Stunden',
 
   // ── Settings / Einstellungen ─────────────────────────────────
   language: 'Sprache',
@@ -132,6 +149,9 @@ const de = {
   logout: 'Abmelden',
   edit_profile: 'Bearbeiten',
   weekly_target: 'Wochenziel (Stunden)',
+  enable_timer: 'Schichttimer aktivieren',
+  enable_timer_hint: 'Echtzeit-Timer zum Starten und Stoppen von Schichten',
+  this_week_strip: 'Diese Woche',
 
   // ── ArbZG warnings ───────────────────────────────────────────
   arbzg_daily: (h: number) => `Hinweis: ${h.toFixed(1)}h heute — gesetzliches Maximum von 10h überschritten (ArbZG §3).`,
@@ -181,12 +201,21 @@ const en = {
   // ── Entries / Aktivität ──────────────────────────────────────
   my_shifts: 'My Shifts',
   jobs_employers: 'Jobs & Employers',
+  month_view: 'Month',
   this_week: 'This Week',
   earnings: 'Earnings',
   top_job: 'Top Job',
   add_entry: 'Add Entry',
+  add_entry_dashboard: 'Add Entry',
+  copy_from_yesterday: 'Copy from Yesterday',
+  copy_yesterday_done: 'Entries Copied!',
   running: 'Running',
   now: 'Now',
+  // Month calendar columns
+  pause_col: 'Pause',
+  hours_col: 'Hours',
+  earnings_col: 'Earnings',
+  no_entry_today: 'No entry',
 
   // ── Entry Edit Modal ─────────────────────────────────────────
   edit_entry: 'Edit Entry',
@@ -203,6 +232,13 @@ const en = {
   billable_hint: 'Include in invoice',
   cancel: 'Cancel',
   save_entry: 'Save Entry',
+  // Entry types
+  entry_type: 'Type',
+  type_work: 'Work',
+  type_vacation: 'Vacation',
+  type_sick: 'Sick',
+  type_holiday: 'Holiday',
+  type_school: 'School',
 
   // ── Projects / Aufträge ──────────────────────────────────────
   employer: 'Employer',
@@ -243,11 +279,12 @@ const en = {
   total_hours_stat: 'Total Hours',
   estimated_revenue: 'Earnings',
   daily_average: 'Daily Average',
-  overtime: 'Overtime',
   hours_last_7: 'Hours (last 7 days)',
   by_job: 'By Job',
   by_category: 'By Category',
   categories_count: 'Categories',
+  monthly_breakdown: 'Monthly Breakdown',
+  no_hours_this_month: 'No hours',
 
   // ── Settings / Einstellungen ─────────────────────────────────
   language: 'Language',
@@ -272,6 +309,9 @@ const en = {
   logout: 'Log Out',
   edit_profile: 'Edit',
   weekly_target: 'Weekly Target (hours)',
+  enable_timer: 'Enable Shift Timer',
+  enable_timer_hint: 'Real-time timer for clocking in and out of shifts',
+  this_week_strip: 'This Week',
 
   // ── ArbZG warnings ───────────────────────────────────────────
   arbzg_daily: (h: number) => `Note: ${h.toFixed(1)}h today — legal maximum of 10h exceeded (ArbZG §3).`,

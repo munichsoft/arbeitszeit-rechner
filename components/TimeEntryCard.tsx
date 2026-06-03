@@ -2,20 +2,22 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Spacing, Radius } from '../constants/spacing';
-import { useTimeStore, getDurationHours, type TimeEntry } from '../store/useTimeStore';
+import { useTimeStore, getDurationHours, type TimeEntry, type EntryType } from '../store/useTimeStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useThemeColors } from '../hooks/useThemeColors';
 import { formatTimeRange, formatDuration, formatEarnings, formatHHMMSS, elapsedSeconds } from '../utils/formatTime';
+import { format } from 'date-fns';
 
 interface TimeEntryCardProps {
   entry: TimeEntry;
   onPress?: () => void;
   onResume?: () => void;
   compact?: boolean;
+  showDate?: boolean;
 }
 
-export default function TimeEntryCard({ entry, onPress, onResume, compact = false }: TimeEntryCardProps) {
+export default function TimeEntryCard({ entry, onPress, onResume, compact = false, showDate = false }: TimeEntryCardProps) {
   const t = useTranslation();
   const C = useThemeColors();
   const { projects, activeEntryId, stopTimer } = useTimeStore();
@@ -23,6 +25,15 @@ export default function TimeEntryCard({ entry, onPress, onResume, compact = fals
 
   const project = projects.find(p => p.id === entry.projectId);
   const isActive = entry.id === activeEntryId;
+  const entryType: EntryType = entry.type ?? 'work';
+  const isNonWork = entryType !== 'work';
+
+  const TYPE_META: Record<Exclude<EntryType, 'work'>, { icon: string; color: string }> = {
+    vacation: { icon: 'umbrella-outline',    color: '#F59E0B' },
+    sick:     { icon: 'thermometer-outline', color: '#EF4444' },
+    holiday:  { icon: 'sparkles-outline',    color: '#8B5CF6' },
+    school:   { icon: 'school-outline',      color: '#3B82F6' },
+  };
 
   const [liveSeconds, setLiveSeconds] = useState(isActive ? elapsedSeconds(entry.startTime) : 0);
   useEffect(() => {
@@ -36,6 +47,7 @@ export default function TimeEntryCard({ entry, onPress, onResume, compact = fals
   const rate = project?.hourlyRate ?? hourlyRate;
   const earnings = formatEarnings(durationHours, rate, currencySymbol);
   const timeRange = formatTimeRange(entry.startTime, isActive ? null : entry.endTime);
+  const dateStr = format(new Date(entry.startTime), 'dd.MM.yyyy');
   const durationLabel = isActive ? formatHHMMSS(liveSeconds) : formatDuration(durationHours, timeFormat);
 
   return (
@@ -52,12 +64,23 @@ export default function TimeEntryCard({ entry, onPress, onResume, compact = fals
             </Text>
           </View>
           <View style={styles.row}>
-            {project && (
-              <View style={[styles.chip, { backgroundColor: project.color + '28' }]}>
-                <Text style={[styles.chipText, { color: project.color }]}>{project.client}</Text>
+            {isNonWork ? (
+              <View style={[styles.chip, { backgroundColor: TYPE_META[entryType as Exclude<EntryType,'work'>].color + '22' }]}>
+                <Ionicons name={TYPE_META[entryType as Exclude<EntryType,'work'>].icon as any} size={12} color={TYPE_META[entryType as Exclude<EntryType,'work'>].color} />
+                <Text style={[styles.chipText, { color: TYPE_META[entryType as Exclude<EntryType,'work'>].color }]}>{t[`type_${entryType}` as keyof typeof t] as string}</Text>
               </View>
+            ) : (
+              project && (
+                <View style={[styles.chip, { backgroundColor: project.color + '28' }]}>
+                  <Text style={[styles.chipText, { color: project.color }]}>{project.client}</Text>
+                </View>
+              )
             )}
-            <Text style={[styles.timeRange, { color: C.onSurfaceVariant }]}>{timeRange}</Text>
+            {!isNonWork ? (
+              <Text style={[styles.timeRange, { color: C.onSurfaceVariant }]}>{showDate ? `${dateStr} • ${timeRange}` : timeRange}</Text>
+            ) : (
+              showDate && <Text style={[styles.timeRange, { color: C.onSurfaceVariant }]}>{dateStr}</Text>
+            )}
           </View>
           {!compact && (
             <View style={[styles.row, styles.bottomRow]}>
@@ -88,7 +111,7 @@ const styles = StyleSheet.create({
   bottomRow: { marginTop: 4 },
   projectName: { fontFamily: 'Outfit_600SemiBold', fontSize: 15, flex: 1, marginRight: Spacing.xs },
   duration: { fontFamily: 'Outfit_700Bold', fontSize: 15 },
-  chip: { borderRadius: Radius.full, paddingHorizontal: Spacing.sm, paddingVertical: 2 },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 4, borderRadius: Radius.full, paddingHorizontal: Spacing.sm, paddingVertical: 2 },
   chipText: { fontFamily: 'Outfit_500Medium', fontSize: 12 },
   timeRange: { fontFamily: 'Outfit_400Regular', fontSize: 12 },
   earnings: { fontFamily: 'Outfit_500Medium', fontSize: 14 },

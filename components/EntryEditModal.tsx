@@ -8,7 +8,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { Spacing, Radius } from '../constants/spacing';
-import { useTimeStore, type TimeEntry } from '../store/useTimeStore';
+import { useTimeStore, type TimeEntry, type EntryType } from '../store/useTimeStore';
 import { useSettingsStore } from '../store/useSettingsStore';
 import { useTranslation } from '../hooks/useTranslation';
 import { useThemeColors } from '../hooks/useThemeColors';
@@ -17,32 +17,36 @@ interface EntryEditModalProps {
   visible: boolean;
   entry?: TimeEntry | null;
   onClose: () => void;
+  defaultDate?: Date; // pre-fills date when creating from month calendar
 }
 
 type PickerMode = null | 'date' | 'start' | 'end';
 
-export default function EntryEditModal({ visible, entry, onClose }: EntryEditModalProps) {
+export default function EntryEditModal({ visible, entry, onClose, defaultDate }: EntryEditModalProps) {
   const t = useTranslation();
   const C = useThemeColors();
-  const { projects, addEntry, updateEntry, deleteEntry } = useTimeStore();
+  const { projects, entries, addEntry, updateEntry, deleteEntry } = useTimeStore();
   const { language } = useSettingsStore();
 
-  const buildDate = (e?: TimeEntry | null) => {
+  const buildDate = (e?: TimeEntry | null, fallback?: Date) => {
     if (e?.startTime) return new Date(e.startTime);
+    if (fallback) { const d = new Date(fallback); d.setHours(9, 0, 0, 0); return d; }
     const d = new Date(); d.setHours(9, 0, 0, 0); return d;
   };
-  const buildEnd = (e?: TimeEntry | null) => {
+  const buildEnd = (e?: TimeEntry | null, fallback?: Date) => {
     if (e?.endTime) return new Date(e.endTime);
+    if (fallback) { const d = new Date(fallback); d.setHours(17, 0, 0, 0); return d; }
     const d = new Date(); d.setHours(17, 0, 0, 0); return d;
   };
 
-  const [startDt, setStartDt] = useState<Date>(buildDate(entry));
-  const [endDt, setEndDt] = useState<Date>(buildEnd(entry));
-  const [pauseMinutes, setPauseMinutes] = useState(String(entry?.pauseMinutes ?? 30));
-  const [selectedProjectId, setSelectedProjectId] = useState(entry?.projectId ?? projects[0]?.id ?? '');
-  const [notes, setNotes] = useState(entry?.notes ?? '');
-  const [billable, setBillable] = useState(entry?.billable ?? true);
-  const [projectPickerOpen, setProjectPickerOpen] = useState(false);
+  const [entryType, setEntryType] = React.useState<EntryType>('work');
+  const [startDt, setStartDt] = React.useState<Date>(buildDate(entry, defaultDate));
+  const [endDt, setEndDt] = React.useState<Date>(buildEnd(entry, defaultDate));
+  const [pauseMinutes, setPauseMinutes] = React.useState(String(entry?.pauseMinutes ?? 30));
+  const [selectedProjectId, setSelectedProjectId] = React.useState(entry?.projectId ?? projects[0]?.id ?? '');
+  const [notes, setNotes] = React.useState(entry?.notes ?? '');
+  const [billable, setBillable] = React.useState(entry?.billable ?? true);
+  const [projectPickerOpen, setProjectPickerOpen] = React.useState(false);
 
   // Picker state
   const [pickerMode, setPickerMode] = useState<PickerMode>(null);
@@ -51,8 +55,9 @@ export default function EntryEditModal({ visible, entry, onClose }: EntryEditMod
 
   React.useEffect(() => {
     if (visible) {
-      setStartDt(buildDate(entry));
-      setEndDt(buildEnd(entry));
+      setEntryType(entry?.type ?? 'work');
+      setStartDt(buildDate(entry, defaultDate));
+      setEndDt(buildEnd(entry, defaultDate));
       setPauseMinutes(String(entry?.pauseMinutes ?? 30));
       setSelectedProjectId(entry?.projectId ?? projects[0]?.id ?? '');
       setNotes(entry?.notes ?? '');
@@ -60,7 +65,7 @@ export default function EntryEditModal({ visible, entry, onClose }: EntryEditMod
       setProjectPickerOpen(false);
       setPickerMode(null);
     }
-  }, [entry, visible]);
+  }, [entry, visible, defaultDate]);
 
   const openPicker = (mode: PickerMode) => {
     const initial = mode === 'start' ? startDt : mode === 'end' ? endDt : startDt;
@@ -87,12 +92,21 @@ export default function EntryEditModal({ visible, entry, onClose }: EntryEditMod
   };
 
   const handleSave = () => {
+    let savedStart = startDt;
+    let savedEnd = endDt;
+    // For non-work entries: store as full-day (00:00 – 23:59) on the selected date
+    if (entryType !== 'work') {
+      savedStart = new Date(startDt); savedStart.setHours(0, 0, 0, 0);
+      savedEnd = new Date(startDt); savedEnd.setHours(23, 59, 59, 0);
+    }
     const entryData: Omit<TimeEntry, 'id'> = {
       projectId: selectedProjectId,
-      startTime: startDt.toISOString(),
-      endTime: endDt.toISOString(),
-      pauseMinutes: Number(pauseMinutes) || 0,
-      notes, billable,
+      startTime: savedStart.toISOString(),
+      endTime: savedEnd.toISOString(),
+      pauseMinutes: entryType === 'work' ? (Number(pauseMinutes) || 0) : 0,
+      notes,
+      billable: entryType === 'work' ? billable : false,
+      type: entryType,
     };
     if (entry) updateEntry(entry.id, entryData);
     else addEntry(entryData);
@@ -141,22 +155,103 @@ export default function EntryEditModal({ visible, entry, onClose }: EntryEditMod
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet" onRequestClose={onClose}>
       <SafeAreaView style={[styles.container, { backgroundColor: C.background }]}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <View style={styles.header}>
-          <Text style={[styles.title, { color: C.onSurface }]}>{entry ? t.edit_entry : t.new_entry}</Text>
+        <View style={styles.header}>
+          <View style={styles.titleContainer}>
+            <Text style={[styles.title, { color: C.onSurface }]}>{entry ? t.edit_entry : t.new_entry}</Text>
+          </View>
           <View style={styles.headerActions}>
             {entry && (
               <TouchableOpacity onPress={handleDelete} hitSlop={16} style={styles.deleteIconBtn}>
-                <Ionicons name="trash-outline" size={22} color={C.error} />
+                <Ionicons name="trash-outline" size={24} color={C.error} />
               </TouchableOpacity>
             )}
             <TouchableOpacity onPress={onClose} hitSlop={16}>
-              <Ionicons name="close" size={26} color={C.actionBlue} />
+              <Ionicons name="close" size={28} color="#10B981" />
             </TouchableOpacity>
           </View>
         </View>
 
         <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-          <View style={[styles.formCard, { backgroundColor: C.surface, borderColor: C.cardBorder }]}>
+          <View style={styles.formCard}>
+
+            {/* Copy from previous — only shown when creating a new entry */}
+            {!entry && (() => {
+              // Find the most recent entry strictly before the selected date
+              const selDateStr = format(startDt, 'yyyy-MM-dd');
+              const prev = [...entries]
+                .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
+                .find(e => format(new Date(e.startTime), 'yyyy-MM-dd') < selDateStr);
+              if (!prev) return null;
+              const prevStart = format(new Date(prev.startTime), 'HH:mm');
+              const prevEnd   = prev.endTime ? format(new Date(prev.endTime), 'HH:mm') : '--:--';
+              return (
+                <TouchableOpacity
+                  style={[styles.copyPrevBanner, { backgroundColor: C.actionBlue + '12', borderColor: C.actionBlue + '40' }]}
+                  onPress={() => {
+                    // Keep the selected date, copy time / break / project from prev
+                    const newStart = new Date(startDt);
+                    const ps = new Date(prev.startTime);
+                    newStart.setHours(ps.getHours(), ps.getMinutes(), 0, 0);
+                    const newEnd = new Date(startDt);
+                    const pe = prev.endTime ? new Date(prev.endTime) : new Date(startDt);
+                    newEnd.setHours(pe.getHours(), pe.getMinutes(), 0, 0);
+                    setStartDt(newStart);
+                    setEndDt(newEnd);
+                    setPauseMinutes(String(prev.pauseMinutes ?? 30));
+                    setSelectedProjectId(prev.projectId ?? projects[0]?.id ?? '');
+                    setBillable(prev.billable ?? true);
+                    setEntryType(prev.type ?? 'work');
+                  }}
+                >
+                  <Ionicons name="copy-outline" size={15} color={C.actionBlue} />
+                  <Text style={[styles.copyPrevText, { color: C.actionBlue }]}>
+                    {language === 'de'
+                      ? `Vom ${format(new Date(prev.startTime), 'dd.MM')} übernehmen (${prevStart}–${prevEnd})`
+                      : `Copy from ${format(new Date(prev.startTime), 'dd.MM')} (${prevStart}–${prevEnd})`}
+                  </Text>
+                  <Ionicons name="chevron-forward" size={13} color={C.actionBlue} />
+                </TouchableOpacity>
+              );
+            })()}
+
+            {/* Type picker */}
+            {(() => {
+              const TYPES: { key: EntryType; icon: keyof typeof Ionicons.glyphMap; color: string }[] = [
+                { key: 'work',     icon: 'briefcase-outline',   color: C.actionBlue },
+                { key: 'vacation', icon: 'umbrella-outline',    color: '#F59E0B' },
+                { key: 'sick',     icon: 'thermometer-outline', color: '#EF4444' },
+                { key: 'holiday',  icon: 'sparkles-outline',    color: '#8B5CF6' },
+                { key: 'school',   icon: 'school-outline',      color: '#3B82F6' },
+              ];
+              return (
+                <View style={styles.field}>
+                  <Text style={[styles.fieldLabel, { color: C.onSurface }]}>{t.entry_type}</Text>
+                  <View style={styles.typeRow}>
+                    {TYPES.map(tp => {
+                      const isSelected = entryType === tp.key;
+                      return (
+                        <TouchableOpacity
+                          key={tp.key}
+                          onPress={() => setEntryType(tp.key)}
+                          style={[
+                            styles.typeChip,
+                            {
+                              backgroundColor: isSelected ? tp.color + '22' : C.surfaceContainerLow,
+                              borderColor: isSelected ? tp.color : C.cardBorder,
+                            },
+                          ]}
+                        >
+                          <Ionicons name={tp.icon} size={15} color={isSelected ? tp.color : C.onSurfaceVariant} />
+                          <Text style={[styles.typeChipText, { color: isSelected ? tp.color : C.onSurfaceVariant }]}>
+                            {t[`type_${tp.key}` as keyof typeof t] as string}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                </View>
+              );
+            })()}
 
             {/* Date */}
             <View style={styles.field}>
@@ -171,40 +266,45 @@ export default function EntryEditModal({ visible, entry, onClose }: EntryEditMod
               </TouchableOpacity>
             </View>
 
-            {/* Start / End */}
-            <View style={styles.timeRow}>
-              <View style={[styles.field, { flex: 1 }]}>
-                <Text style={[styles.fieldLabel, { color: C.onSurface }]}>{t.start_time}</Text>
-                <TouchableOpacity
-                  style={[styles.inputRow, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }]}
-                  onPress={() => openPicker('start')}
-                >
-                  <Ionicons name="time-outline" size={16} color={C.outline} style={styles.inputIcon} />
-                  <Text style={[styles.inputText, { color: C.onSurface }]}>{startLabel}</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={{ width: Spacing.sm }} />
-              <View style={[styles.field, { flex: 1 }]}>
-                <Text style={[styles.fieldLabel, { color: C.onSurface }]}>{t.end_time}</Text>
-                <TouchableOpacity
-                  style={[styles.inputRow, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }]}
-                  onPress={() => openPicker('end')}
-                >
-                  <Ionicons name="time-outline" size={16} color={C.outline} style={styles.inputIcon} />
-                  <Text style={[styles.inputText, { color: C.onSurface }]}>{endLabel}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+            {/* Start / End / Break — only for work type */}
+            {entryType === 'work' && (
+              <>
+                {/* Start / End */}
+                <View style={styles.timeRow}>
+                  <View style={[styles.field, { flex: 1 }]}>
+                    <Text style={[styles.fieldLabel, { color: C.onSurface }]}>{t.start_time}</Text>
+                    <TouchableOpacity
+                      style={[styles.inputRow, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }]}
+                      onPress={() => openPicker('start')}
+                    >
+                      <Ionicons name="time-outline" size={16} color={C.outline} style={styles.inputIcon} />
+                      <Text style={[styles.inputText, { color: C.onSurface }]}>{startLabel}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={{ width: Spacing.sm }} />
+                  <View style={[styles.field, { flex: 1 }]}>
+                    <Text style={[styles.fieldLabel, { color: C.onSurface }]}>{t.end_time}</Text>
+                    <TouchableOpacity
+                      style={[styles.inputRow, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }]}
+                      onPress={() => openPicker('end')}
+                    >
+                      <Ionicons name="time-outline" size={16} color={C.outline} style={styles.inputIcon} />
+                      <Text style={[styles.inputText, { color: C.onSurface }]}>{endLabel}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
 
-            {/* Break */}
-            <View style={styles.field}>
-              <Text style={[styles.fieldLabel, { color: C.onSurface }]}>{t.break_minutes}</Text>
-              <View style={[styles.inputRow, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }]}>
-                <Ionicons name="cafe-outline" size={18} color={C.outline} style={styles.inputIcon} />
-                <TextInput style={[styles.inputText, { flex: 1, color: C.onSurface }]} value={pauseMinutes} onChangeText={setPauseMinutes}
-                  placeholder="30" placeholderTextColor={C.outline} keyboardType="number-pad" />
-              </View>
-            </View>
+                {/* Break */}
+                <View style={styles.field}>
+                  <Text style={[styles.fieldLabel, { color: C.onSurface }]}>{t.break_minutes}</Text>
+                  <View style={[styles.inputRow, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow }]}>
+                    <Ionicons name="cafe-outline" size={18} color={C.outline} style={styles.inputIcon} />
+                    <TextInput style={[styles.inputText, { flex: 1, color: C.onSurface }]} value={pauseMinutes} onChangeText={setPauseMinutes}
+                      placeholder="30" placeholderTextColor={C.outline} keyboardType="number-pad" />
+                  </View>
+                </View>
+              </>
+            )}
 
             {/* Job picker */}
             <View style={styles.field}>
@@ -309,14 +409,18 @@ export default function EntryEditModal({ visible, entry, onClose }: EntryEditMod
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.sm },
+  header: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', paddingHorizontal: Spacing.md, paddingVertical: Spacing.md, minHeight: 64 },
+  titleContainer: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', zIndex: -1 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: Spacing.md },
   deleteIconBtn: { padding: 4 },
-  title: { fontFamily: 'Outfit_600SemiBold', fontSize: 22 },
+  title: { fontFamily: 'Outfit_700Bold', fontSize: 20 },
   scroll: { flex: 1, padding: Spacing.md },
-  formCard: { borderRadius: Radius.xl, padding: Spacing.md, gap: Spacing.md, borderWidth: 1 },
+  formCard: { gap: Spacing.lg, paddingBottom: Spacing.xl },
   field: { gap: 4 },
   fieldLabel: { fontFamily: 'Outfit_500Medium', fontSize: 13 },
+  typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.sm },
+  typeChip: { flexDirection: 'row', alignItems: 'center', gap: 5, borderWidth: 1.5, borderRadius: Radius.full, paddingHorizontal: Spacing.sm, paddingVertical: 7 },
+  typeChipText: { fontFamily: 'Outfit_500Medium', fontSize: 12 },
   timeRow: { flexDirection: 'row' },
   inputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.sm, minHeight: 52 },
   inputIcon: { marginRight: Spacing.xs },
@@ -328,7 +432,7 @@ const styles = StyleSheet.create({
   toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderWidth: 1, borderRadius: Radius.lg, padding: Spacing.sm, minHeight: 64 },
   toggleLabel: { fontFamily: 'Outfit_500Medium', fontSize: 15 },
   toggleSub: { fontFamily: 'Outfit_400Regular', fontSize: 12, marginTop: 2 },
-  actions: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm, paddingBottom: Spacing.md, borderTopWidth: StyleSheet.hairlineWidth },
+  actions: { flexDirection: 'row', gap: Spacing.sm, paddingHorizontal: Spacing.md, paddingTop: Spacing.sm, paddingBottom: Spacing.xl, borderTopWidth: StyleSheet.hairlineWidth },
   cancelBtn: { flex: 1, borderWidth: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },
   cancelText: { fontFamily: 'Outfit_500Medium', fontSize: 14 },
   saveBtn: { flex: 1, borderRadius: Radius.lg, paddingVertical: Spacing.sm + 2, alignItems: 'center', justifyContent: 'center', minHeight: 52 },
@@ -339,4 +443,7 @@ const styles = StyleSheet.create({
   iosPickerTitle: { fontFamily: 'Outfit_600SemiBold', fontSize: 15 },
   iosPickerBtn: { fontFamily: 'Outfit_500Medium', fontSize: 15, paddingHorizontal: 4, paddingVertical: 4 },
   iosPickerControl: { width: '100%' },
+  // Copy from previous banner
+  copyPrevBanner: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: Radius.lg, paddingHorizontal: Spacing.sm, paddingVertical: Spacing.sm, marginBottom: Spacing.sm },
+  copyPrevText: { flex: 1, fontFamily: 'Outfit_500Medium', fontSize: 13 },
 });
