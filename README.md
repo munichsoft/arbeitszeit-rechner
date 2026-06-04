@@ -10,14 +10,15 @@ Designed for everyday workers — nurses, physiotherapists, cleaners, and anyone
 
 | Dashboard | Aktivität | Berichte | Einstellungen |
 |---|---|---|---|
-| Live timer, weekly progress bar, stat cards, ArbZG warnings, recent entries | Time entries grouped by day, Schichten / Aufträge toggle, search | Date range reports with native date pickers, bar chart, project filter, PDF/CSV export | Profile editing, language, theme, pay settings, ArbZG info |
+| Live timer with pause/break, overtime tracking, weekly progress, stat cards, ArbZG warnings, recent entries | Time entries grouped by day, Schichten / Aufträge toggle, search | Date range reports with native date pickers, bar chart, project filter, PDF/CSV export | Profile editing, language, theme, pay settings, ArbZG info |
 
 ---
 
 ## ✨ Features
 
-- **Live Timer** — start/stop with haptic feedback, shows elapsed HH:MM:SS
-- **Manual Entry** — native date & time pickers (spinner on iOS, dialog on Android)
+- **Live Timer** — start/stop/pause with haptic feedback, shows elapsed HH:MM:SS, supports break tracking
+- **Overtime Tracking** — visual tile for weekly and cumulative overtime (Überstunden) vs. target hours
+- **Manual Entry & Jobs** — native date & time pickers, with streamlined Add/Edit job dialogs
 - **Weekly Progress** — progress bar with Mo–Fr day labels, respects time format setting
 - **ArbZG Compliance** — advisory warnings for §3 (10h/day), §4 (break rules), §5 (11h rest)
 - **Reports** — PDF and CSV export with native share sheet
@@ -26,6 +27,7 @@ Designed for everyday workers — nurses, physiotherapists, cleaners, and anyone
 - **Editable Profile** — name and email, shown as initials avatar across all screens
 - **Pay Settings** — hourly rate, currency (€ / $ / £ / CHF), weekly target hours
 - **Swipeable Deletion** — time entries and jobs can be deleted
+- **Polished UI** — improved modern styling, refined colors, and optimized border radii
 
 ---
 
