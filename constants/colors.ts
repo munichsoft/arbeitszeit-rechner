@@ -104,7 +104,7 @@ export const DarkColors = {
   tabBarBg: '#1F2937',
 } as const;
 
-export type ColorPalette = typeof LightColors;
+export type ColorPalette = Record<keyof typeof LightColors, string>;
 export type ColorKey = keyof ColorPalette;
 
 export const Colors = LightColors;

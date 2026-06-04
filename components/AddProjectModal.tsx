@@ -193,7 +193,7 @@ export default function AddProjectModal({ visible, project, onClose }: AddProjec
             <View style={styles.field}>
               <Text style={[styles.label, { color: C.onSurface }]}>{language === 'de' ? 'Startdatum (Optional)' : 'Start Date (Optional)'}</Text>
               <TouchableOpacity
-                style={[styles.input, { color: C.onSurface, borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow, justifyContent: 'center' }]}
+                style={[styles.input, { borderColor: C.cardBorder, backgroundColor: C.surfaceContainerLow, justifyContent: 'center' }]}
                 onPress={() => setShowDatePicker(true)}
               >
                 <Text style={{ color: startDate ? C.onSurface : C.outline }}>

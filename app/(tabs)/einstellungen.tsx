@@ -12,6 +12,8 @@ import { useTimeStore } from '../../store/useTimeStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useThemeColors } from '../../hooks/useThemeColors';
 import { exportCSV } from '../../utils/exportHelpers';
+import { exportBackup, importBackup } from '../../utils/backupHelpers';
+import { scheduleDailyReminder, requestNotificationPermissions } from '../../utils/notificationHelpers';
 import ProjectCard from '../../components/ProjectCard';
 import AddProjectModal from '../../components/AddProjectModal';
 import type { Language } from '../../utils/i18n';
@@ -73,8 +75,10 @@ export default function EinstellungenScreen() {
     theme, setTheme,
     userName, userEmail, hourlyRate, currencySymbol, weeklyTargetHours,
     timeFormat, pushNotifications, showEarnings, enableTimer, jobStartDate, workingDays,
+    reminderEnabled, reminderTime,
     setUserName, setUserEmail,
     setHourlyRate, setCurrencySymbol, setWeeklyTargetHours, setTimeFormat, setPushNotifications, setShowEarnings, setEnableTimer, setJobStartDate, setWorkingDays,
+    setReminderEnabled, setReminderTime,
   } = useSettingsStore();
 
   const { entries, projects, getTotalHoursForProject } = useTimeStore();
@@ -112,6 +116,17 @@ export default function EinstellungenScreen() {
   // Job start date picker state
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [tempStartDate, setTempStartDate] = useState(jobStartDate ? new Date(jobStartDate) : new Date());
+  
+  // Reminder time picker state
+  const [showReminderPicker, setShowReminderPicker] = useState(false);
+  const [tempReminderTime, setTempReminderTime] = useState(new Date());
+
+  const getReminderDate = () => {
+    const [h, m] = reminderTime.split(':');
+    const d = new Date();
+    d.setHours(parseInt(h || '20', 10), parseInt(m || '0', 10), 0, 0);
+    return d;
+  };
   const jobStartDateObj = jobStartDate ? new Date(jobStartDate) : null;
   const jobStartDateLabel = jobStartDateObj
     ? jobStartDateObj.toLocaleDateString(language === 'de' ? 'de-DE' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -120,6 +135,70 @@ export default function EinstellungenScreen() {
   const handleExportCSV = async () => {
     try { await exportCSV(entries, projects, currencySymbol, hourlyRate); }
     catch { Alert.alert('Fehler / Error', 'Export fehlgeschlagen / Export failed.'); }
+  };
+
+  const handleExportBackup = async () => {
+    try {
+      await exportBackup();
+    } catch {
+      Alert.alert(
+        language === 'de' ? 'Fehler' : 'Error',
+        language === 'de' ? 'Backup fehlgeschlagen.' : 'Backup failed.'
+      );
+    }
+  };
+
+  const handleToggleReminder = async (enabled: boolean) => {
+    setReminderEnabled(enabled);
+    if (enabled) {
+      const granted = await requestNotificationPermissions();
+      if (!granted) {
+        Alert.alert(
+          language === 'de' ? 'Berechtigung erforderlich' : 'Permission Required',
+          language === 'de' 
+            ? 'Bitte aktiviere die Benachrichtigungen in den Systemeinstellungen.' 
+            : 'Please enable notifications in system settings.'
+        );
+        setReminderEnabled(false);
+        return;
+      }
+    }
+    setTimeout(() => {
+      scheduleDailyReminder();
+    }, 100);
+  };
+
+  const handleSaveReminderTime = (date: Date) => {
+    const hh = String(date.getHours()).padStart(2, '0');
+    const mm = String(date.getMinutes()).padStart(2, '0');
+    setReminderTime(`${hh}:${mm}`);
+    setTimeout(() => {
+      scheduleDailyReminder();
+    }, 100);
+  };
+
+  const handleImportBackup = () => {
+    Alert.alert(
+      t.backup_confirm_title,
+      t.backup_confirm_msg,
+      [
+        { text: t.cancel, style: 'cancel' },
+        {
+          text: language === 'de' ? 'Importieren' : 'Import',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const success = await importBackup();
+              if (success) {
+                Alert.alert(t.backup_success_title, t.backup_success_msg);
+              }
+            } catch {
+              Alert.alert(t.backup_invalid_title, t.backup_invalid_msg);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const cycleCurrency = () => {
@@ -389,8 +468,58 @@ export default function EinstellungenScreen() {
         <Section title={t.data_backup}>
           <SettingsRow icon="download-outline" label={t.export_csv} onPress={handleExportCSV} />
           <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
-          <SettingsRow icon="flask-outline" label="Inject Sample Data" sublabel="Physio, last 2 months (20h/w)" onPress={() => { useTimeStore.getState().injectSampleData(); Alert.alert('Success', 'Injected sample data!'); }} />
+          <SettingsRow icon="cloud-upload-outline" label={t.backup_export_btn} sublabel={t.backup_export_hint} onPress={handleExportBackup} />
+          <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+          <SettingsRow icon="cloud-download-outline" label={t.backup_import_btn} sublabel={t.backup_import_hint} onPress={handleImportBackup} />
+          {__DEV__ && (
+            <>
+              <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+              <SettingsRow icon="flask-outline" label="Inject Sample Data" sublabel="Physio, last 2 months (20h/w)" onPress={() => { useTimeStore.getState().injectSampleData(); Alert.alert('Success', 'Injected sample data!'); }} />
+            </>
+          )}
         </Section>
+
+        {/* ── Notifications ─────────────────────────── */}
+        <Section title={t.notifications}>
+          <SettingsRow icon="notifications-outline" label={t.push_notifications} sublabel={t.push_notifications_hint} toggle toggleValue={pushNotifications} onToggle={setPushNotifications} />
+          <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+          <SettingsRow icon="alarm-outline" label={t.reminder_daily} sublabel={t.reminder_daily_hint} toggle toggleValue={reminderEnabled} onToggle={handleToggleReminder} />
+          {reminderEnabled && (
+            <>
+              <View style={[styles.divider, { backgroundColor: C.cardBorder }]} />
+              <SettingsRow icon="time-outline" label={t.reminder_time} value={reminderTime} onPress={() => { setTempReminderTime(getReminderDate()); setShowReminderPicker(true); }} />
+            </>
+          )}
+        </Section>
+
+        {showReminderPicker && Platform.OS === 'ios' && (
+          <View style={[styles.iosPickerWrapper, { borderTopColor: C.cardBorder }]}>
+            <View style={styles.iosPickerHeader}>
+              <TouchableOpacity onPress={() => setShowReminderPicker(false)}>
+                <Text style={[styles.iosPickerBtn, { color: C.outline }]}>{t.cancel}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => { handleSaveReminderTime(tempReminderTime); setShowReminderPicker(false); }}>
+                <Text style={[styles.iosPickerBtn, { color: C.actionBlue, fontFamily: 'Outfit_600SemiBold' }]}>OK</Text>
+              </TouchableOpacity>
+            </View>
+            <DateTimePicker
+              value={tempReminderTime}
+              mode="time"
+              display="spinner"
+              onChange={(_, d) => d && setTempReminderTime(d)}
+              style={{ width: '100%' }}
+              themeVariant={C.background === '#0F1117' ? 'dark' : 'light'}
+            />
+          </View>
+        )}
+        {showReminderPicker && Platform.OS === 'android' && (
+          <DateTimePicker
+            value={tempReminderTime}
+            mode="time"
+            display="default"
+            onChange={(_, d) => { setShowReminderPicker(false); if (d) handleSaveReminderTime(d); }}
+          />
+        )}
 
                 {/* ── ArbZG Info ────────────────────────────── */}
         <Section title={t.arbzg_title}>

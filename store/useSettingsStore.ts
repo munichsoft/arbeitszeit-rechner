@@ -22,6 +22,8 @@ interface SettingsState {
   enableTimer: boolean; // live shift timer (disabled by default)
   jobStartDate: string | null; // ISO date string, used as floor for cumulative overtime
   workingDays: number[]; // 1=Mon, 2=Tue, ..., 7=Sun
+  reminderEnabled: boolean;
+  reminderTime: string; // "HH:MM"
 
   setLanguage: (lang: Language) => void;
   setTheme: (theme: Theme) => void;
@@ -37,6 +39,8 @@ interface SettingsState {
   setEnableTimer: (enabled: boolean) => void;
   setJobStartDate: (date: string | null) => void;
   setWorkingDays: (days: number[]) => void;
+  setReminderEnabled: (enabled: boolean) => void;
+  setReminderTime: (time: string) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -56,6 +60,8 @@ export const useSettingsStore = create<SettingsState>()(
       enableTimer: false,
       jobStartDate: null,
       workingDays: [1, 2, 3, 4, 5],
+      reminderEnabled: false,
+      reminderTime: '20:00',
 
       setLanguage: (lang) => set({ language: lang }),
       setTheme: (theme) => set({ theme }),
@@ -71,6 +77,8 @@ export const useSettingsStore = create<SettingsState>()(
       setEnableTimer: (enabled) => set({ enableTimer: enabled }),
       setJobStartDate: (date) => set({ jobStartDate: date }),
       setWorkingDays: (days) => set({ workingDays: days }),
+      setReminderEnabled: (enabled) => set({ reminderEnabled: enabled }),
+      setReminderTime: (time) => set({ reminderTime: time }),
     }),
     {
       name: 'settings-store-v3',

@@ -7,6 +7,8 @@ import type { TimeEntry, Project } from '../store/useTimeStore';
 import type { CurrencySymbol } from '../store/useSettingsStore';
 import { formatDurationHHMM, formatGermanDate } from './formatTime';
 
+import { useSettingsStore } from '../store/useSettingsStore';
+
 // ─── CSV ──────────────────────────────────────────────────────────────────────
 
 function csvEscape(val: string): string {
@@ -22,7 +24,13 @@ export function generateCSV(
   symbol: CurrencySymbol,
   hourlyRate: number
 ): string {
-  const header = ['Datum', 'Projekt', 'Kunde', 'Startzeit', 'Endzeit', 'Pause (Min.)', 'Dauer', 'Einnahmen', 'Abrechenbar', 'Notizen'];
+  const showEarnings = useSettingsStore.getState().showEarnings;
+  const header = ['Datum', 'Projekt', 'Kunde', 'Startzeit', 'Endzeit', 'Pause (Min.)', 'Dauer'];
+  if (showEarnings) {
+    header.push('Einnahmen');
+  }
+  header.push('Abrechenbar', 'Notizen');
+
   const rows = entries.map(e => {
     const project = projects.find(p => p.id === e.projectId);
     const start = new Date(e.startTime);
@@ -32,7 +40,7 @@ export function generateCSV(
     const rate = project?.hourlyRate ?? hourlyRate;
     const earnings = `${symbol}${(durHours * rate).toFixed(2)}`;
 
-    return [
+    const row = [
       formatGermanDate(start),
       project?.name ?? '—',
       project?.client ?? '—',
@@ -40,10 +48,12 @@ export function generateCSV(
       e.endTime ? format(new Date(e.endTime), 'HH:mm') : 'Läuft',
       String(e.pauseMinutes),
       formatDurationHHMM(durHours),
-      earnings,
-      e.billable ? 'Ja' : 'Nein',
-      e.notes,
-    ].map(csvEscape).join(',');
+    ];
+    if (showEarnings) {
+      row.push(earnings);
+    }
+    row.push(e.billable ? 'Ja' : 'Nein', e.notes);
+    return row.map(csvEscape).join(',');
   });
 
   return [header.map(csvEscape).join(','), ...rows].join('\n');
@@ -73,6 +83,7 @@ export function generatePDFHTML(
   hourlyRate: number,
   dateRangeLabel: string
 ): string {
+  const showEarnings = useSettingsStore.getState().showEarnings;
   const totalHours = entries.reduce((acc, e) => {
     const start = new Date(e.startTime).getTime();
     const end = e.endTime ? new Date(e.endTime).getTime() : Date.now();
@@ -102,7 +113,7 @@ export function generatePDFHTML(
         <td>${project?.client ?? '—'}</td>
         <td>${format(start, 'HH:mm')} – ${e.endTime ? format(new Date(e.endTime), 'HH:mm') : 'Jetzt'}</td>
         <td>${formatDurationHHMM(durHours)}</td>
-        <td>${symbol}${(durHours * rate).toFixed(2)}</td>
+        ${showEarnings ? `<td>${symbol}${(durHours * rate).toFixed(2)}</td>` : ''}
       </tr>`;
   }).join('');
 
@@ -128,14 +139,14 @@ export function generatePDFHTML(
   <table>
     <thead>
       <tr>
-        <th>Datum</th><th>Projekt</th><th>Kunde</th><th>Zeitraum</th><th>Dauer</th><th>Einnahmen</th>
+        <th>Datum</th><th>Projekt</th><th>Kunde</th><th>Zeitraum</th><th>Dauer</th>${showEarnings ? '<th>Einnahmen</th>' : ''}
       </tr>
     </thead>
     <tbody>${rows}</tbody>
   </table>
   <div class="summary">
     <div class="summary-item"><strong>${formatDurationHHMM(totalHours)}</strong>Gesamtstunden</div>
-    <div class="summary-item"><strong>${symbol}${totalEarnings.toFixed(2)}</strong>Gesamteinnahmen</div>
+    ${showEarnings ? `<div class="summary-item"><strong>${symbol}${totalEarnings.toFixed(2)}</strong>Gesamteinnahmen</div>` : ''}
     <div class="summary-item"><strong>${entries.length}</strong>Einträge</div>
     <div class="summary-item"><strong>${new Set(entries.map(e => e.projectId)).size}</strong>Projekte</div>
   </div>

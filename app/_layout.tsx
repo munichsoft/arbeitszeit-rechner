@@ -10,8 +10,22 @@ import {
   Outfit_700Bold,
 } from '@expo-google-fonts/outfit';
 import * as SplashScreen from 'expo-splash-screen';
+import * as Notifications from 'expo-notifications';
+import { scheduleDailyReminder } from '../utils/notificationHelpers';
+
+import { useTimeStore } from '../store/useTimeStore';
 
 SplashScreen.preventAutoHideAsync();
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
@@ -24,8 +38,20 @@ export default function RootLayout() {
   useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
+      scheduleDailyReminder().catch(err => console.error('Failed to schedule daily reminder on startup:', err));
     }
   }, [fontsLoaded, fontError]);
+
+  useEffect(() => {
+    let lastEntriesLength = useTimeStore.getState().entries.length;
+    const unsubscribe = useTimeStore.subscribe((state) => {
+      if (state.entries.length !== lastEntriesLength) {
+        lastEntriesLength = state.entries.length;
+        scheduleDailyReminder().catch(err => console.error('Failed to reschedule daily reminder on state change:', err));
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   if (!fontsLoaded && !fontError) {
     return null;
