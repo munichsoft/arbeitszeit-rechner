@@ -42,6 +42,7 @@ interface TimeState {
   // Timer actions
   startTimer: (projectId: string) => void;
   stopTimer: () => void;
+  cancelTimer: () => void; // discard active entry without saving
   togglePause: () => void;
 
   // Entry actions
@@ -185,10 +186,38 @@ export const useTimeStore = create<TimeState>()(
           additionalPause = (Date.now() - new Date(activePauseStart).getTime()) / 60000;
         }
 
+        const activeEntry = get().entries.find(e => e.id === activeEntryId);
+        if (activeEntry) {
+          const startMs = new Date(activeEntry.startTime).getTime();
+          const totalPauseMs = (activeEntry.pauseMinutes + additionalPause) * 60000;
+          const netSeconds = (Date.now() - startMs - totalPauseMs) / 1000;
+
+          // Discard ghost entries shorter than 60 seconds of net work
+          if (netSeconds < 60) {
+            set(state => ({
+              entries: state.entries.filter(e => e.id !== activeEntryId),
+              activeEntryId: null,
+              activePauseStart: null,
+            }));
+            return;
+          }
+        }
+
         set(state => ({
           entries: state.entries.map(e =>
-            e.id === activeEntryId ? { ...e, endTime: new Date().toISOString(), pauseMinutes: e.pauseMinutes + additionalPause } : e
+            e.id === activeEntryId ? { ...e, endTime: new Date().toISOString(), pauseMinutes: Math.round(e.pauseMinutes + additionalPause) } : e
           ),
+          activeEntryId: null,
+          activePauseStart: null,
+        }));
+      },
+
+      // Discard active entry without saving (e.g. timer disabled mid-run)
+      cancelTimer: () => {
+        const { activeEntryId } = get();
+        if (!activeEntryId) return;
+        set(state => ({
+          entries: state.entries.filter(e => e.id !== activeEntryId),
           activeEntryId: null,
           activePauseStart: null,
         }));
@@ -203,7 +232,7 @@ export const useTimeStore = create<TimeState>()(
           set(state => ({
             activePauseStart: null,
             entries: state.entries.map(e =>
-              e.id === activeEntryId ? { ...e, pauseMinutes: e.pauseMinutes + additionalPause } : e
+              e.id === activeEntryId ? { ...e, pauseMinutes: Math.round(e.pauseMinutes + additionalPause) } : e
             )
           }));
         } else {

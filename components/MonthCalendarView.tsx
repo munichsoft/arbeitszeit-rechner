@@ -93,10 +93,11 @@ export default function MonthCalendarView({ year, month, entries, onDayPress }: 
     return `${hh}:${mm}`;
   };
   const fmtPause = (m: number) => {
-    if (m === 0) return '--';
-    const h = Math.floor(m / 60);
-    const rem = m % 60;
-    return h > 0 ? `${h}h ${rem}'` : `${m}'`;
+    const rounded = Math.round(m);
+    if (rounded === 0) return '--';
+    const h = Math.floor(rounded / 60);
+    const rem = rounded % 60;
+    return h > 0 ? `${h}h ${rem}'` : `${rounded}'`;
   };
 
   return (

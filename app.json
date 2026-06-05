@@ -9,12 +9,17 @@
     "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash-icon.png",
-      "resizeMode": "cover",
+      "resizeMode": "contain",
       "backgroundColor": "#252f34"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.arbeitszeitrechner.app",
+      "splash": {
+        "image": "./assets/splash-icon.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#252f34"
+      },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }

@@ -27,18 +27,19 @@ export function checkBreakRequirement(
   workingHours: number,
   pauseMinutes: number
 ): LaborLawWarning | null {
-  if (workingHours > 9 && pauseMinutes < 45) {
+  const roundedPause = Math.round(pauseMinutes);
+  if (workingHours > 9 && roundedPause < 45) {
     return {
       type: 'break_required',
       severity: 'warning',
-      message: `⚠️ ArbZG §4: Bei mehr als 9 Stunden Arbeit sind mindestens 45 Minuten Pause erforderlich (aktuell: ${pauseMinutes} Min.).`,
+      message: `⚠️ ArbZG §4: Bei mehr als 9 Stunden Arbeit sind mindestens 45 Minuten Pause erforderlich (aktuell: ${roundedPause} Min.).`,
     };
   }
-  if (workingHours > 6 && pauseMinutes < 30) {
+  if (workingHours > 6 && roundedPause < 30) {
     return {
       type: 'break_required',
       severity: 'warning',
-      message: `⚠️ ArbZG §4: Bei mehr als 6 Stunden Arbeit sind mindestens 30 Minuten Pause erforderlich (aktuell: ${pauseMinutes} Min.).`,
+      message: `⚠️ ArbZG §4: Bei mehr als 6 Stunden Arbeit sind mindestens 30 Minuten Pause erforderlich (aktuell: ${roundedPause} Min.).`,
     };
   }
   return null;

@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Language } from '../utils/i18n';
+// Imported lazily to avoid circular dep — only call at runtime
+import { useTimeStore } from './useTimeStore';
 
 export type CurrencySymbol = '€' | '$' | '£' | 'CHF';
 export type TimeFormat = 'HH:MM' | 'decimal';
@@ -74,7 +76,16 @@ export const useSettingsStore = create<SettingsState>()(
       setPushNotifications: (enabled) => set({ pushNotifications: enabled }),
       setWeeklyEmailSummary: (enabled) => set({ weeklyEmailSummary: enabled }),
       setShowEarnings: (enabled) => set({ showEarnings: enabled }),
-      setEnableTimer: (enabled) => set({ enableTimer: enabled }),
+      setEnableTimer: (enabled) => {
+        if (!enabled) {
+          // Kill any running timer immediately so no ghost entry lingers
+          const { activeEntryId } = useTimeStore.getState();
+          if (activeEntryId) {
+            useTimeStore.getState().cancelTimer();
+          }
+        }
+        set({ enableTimer: enabled });
+      },
       setJobStartDate: (date) => set({ jobStartDate: date }),
       setWorkingDays: (days) => set({ workingDays: days }),
       setReminderEnabled: (enabled) => set({ reminderEnabled: enabled }),
